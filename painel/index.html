@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kauan KeySystem - Painel</title>
+    <style>
+        body {
+            background: #0d0d0d;
+            color: white;
+            font-family: Arial;
+            text-align: center;
+        }
+        #loginBox, #panel {
+            margin-top: 100px;
+        }
+        input {
+            padding: 10px;
+            width: 240px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background: red;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            margin: 10px;
+        }
+        table {
+            margin: 20px auto;
+            width: 80%;
+            border-collapse: collapse;
+        }
+        td, th {
+            border: 1px solid #333;
+            padding: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loginBox">
+    <h2>Login do Painel</h2>
+    <input id="user" placeholder="Usuário"><br>
+    <input id="pass" placeholder="Senha" type="password"><br>
+    <button onclick="login()">Entrar</button>
+</div>
+
+<div id="panel" style="display:none;">
+    <h2>Painel do KeySystem</h2>
+
+    <button onclick="gerar(24)">Gerar Key (24h)</button>
+    <button onclick="gerar(1)">Gerar Key (1h)</button>
+    <button onclick="gerar(0)">Gerar Key (Lifetime)</button>
+
+    <h3>Keys registradas</h3>
+    <table id="keysTable">
+        <tr>
+            <th>Key</th>
+            <th>Expiração</th>
+            <th>Último uso</th>
+            <th>Executor</th>
+            <th>IP</th>
+        </tr>
+    </table>
+</div>
+
+<script>
+let USER = "";
+let PASS = "";
+
+function login() {
+    USER = document.getElementById("user").value;
+    PASS = document.getElementById("pass").value;
+
+    if (USER === "MczinOwner" && PASS === "Mczin121314#") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("panel").style.display = "block";
+        loadKeys();
+    } else {
+        alert("Login incorreto.");
+    }
+}
+
+async function gerar(hours) {
+    const url = `/api/generate?user=${USER}&pass=${PASS}&hours=${hours}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    alert("KEY GERADA: " + data.key);
+    loadKeys();
+}
+
+async function loadKeys() {
+    const res = await fetch("/db.json");
+    const db = await res.json();
+
+    const table = document.getElementById("keysTable");
+    table.innerHTML = `
+        <tr>
+            <th>Key</th>
+            <th>Expiração</th>
+            <th>Último uso</th>
+            <th>Executor</th>
+            <th>IP</th>
+        </tr>
+    `;
+
+    db.keys.forEach(k => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${k.key}</td>
+            <td>${k.expiresAt === 0 ? "Lifetime" : new Date(k.expiresAt).toLocaleString()}</td>
+            <td>${k.lastUse === 0 ? "Nunca" : new Date(k.lastUse).toLocaleString()}</td>
+            <td>${k.executor}</td>
+            <td>${k.ip}</td>
+        `;
+        table.appendChild(row);
+    });
+}
+</script>
+
+</body>
+</html>
