@@ -1,4 +1,3 @@
-
 module.exports = (req, res) => {
     const user = req.query.user;
     const pass = req.query.pass;
