@@ -1,37 +1,28 @@
-const fs = require("fs");
-const path = require("path");
+import kv from "./kv";
 
-module.exports = (req, res) => {
-    const dbPath = path.join(__dirname, "..", "db.json");
-    const db = JSON.parse(fs.readFileSync(dbPath));
-
+export default async function handler(req, res) {
     const key = req.query.key;
-    const executor = req.query.executor || "unknown";
-    const userIp = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+    const executor = req.headers["executor"] || "unknown";
 
-    const found = db.keys.find(k => k.key === key);
+    const ip =
+        req.headers["x-real-ip"] ||
+        req.headers["x-forwarded-for"] ||
+        req.socket.remoteAddress;
 
-    if (!found) {
-        return res.json({ success: false, message: "invalid_key" });
-    }
+    if (!key)
+        return res.status(400).json({ error: "Nenhuma key enviada." });
 
-    if (Date.now() > found.expires) {
-        return res.json({ success: false, message: "expired_key" });
-    }
+    const data = await kv.hgetall(`key:${key}`);
+    if (!data)
+        return res.status(404).json({ error: "Key inexistente." });
 
-    if (!found.used) {
-        found.used = true;
-        found.ip = userIp;
-        found.executor = executor;
-    }
+    if (Date.now() > Number(data.expiresAt))
+        return res.status(403).json({ error: "Key expirada." });
 
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-
-    res.json({
-        success: true,
-        message: "validated",
-        key: key,
-        registered_ip: found.ip,
-        executor: found.executor
+    await kv.hset(`key:${key}`, {
+        usedByIP: ip,
+        executor
     });
-};
+
+    return res.status(200).json({ valid: true });
+}
