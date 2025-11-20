@@ -1,27 +1,29 @@
-const fs = require("fs");
-const path = require("path");
+import kv from "./kv";
 
-module.exports = (req, res) => {
-    const dbPath = path.join(__dirname, "..", "db.json");
-    const db = JSON.parse(fs.readFileSync(dbPath));
+export default async function handler(req, res) {
+    if (req.method !== "POST")
+        return res.status(405).json({ error: "Método inválido" });
 
-    const minutes = parseInt(req.query.minutes) || 60;
-    const key = Math.random().toString(36).substring(2, 15);
-    const expires = Date.now() + minutes * 60 * 1000;
+    const { key, days } = req.body;
+    if (!key || !days)
+        return res.status(400).json({ error: "Envie a key e os dias" });
 
-    db.keys.push({
+    const expiresAt = Date.now() + (days * 24 * 60 * 60 * 1000);
+
+    const data = {
         key,
-        expires,
-        ip: null,
-        executor: null,
-        used: false
-    });
+        createdAt: Date.now(),
+        expiresAt,
+        status: "active",
+        usedByIP: "none",
+        executor: "none"
+    };
 
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+    await kv.hset(`key:${key}`, data);
 
-    res.json({
+    return res.status(200).json({
         success: true,
-        key,
-        expires
+        message: "Key criada com sucesso!",
+        data
     });
-};
+}
