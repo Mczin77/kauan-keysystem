@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel - Login</title>
 
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f0f0f;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .login-box {
+        background: #1a1a1a;
+        padding: 30px;
+        width: 320px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #000;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #00aaff;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+        background: #2a2a2a;
+        color: white;
+        font-size: 15px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        background: #00aaff;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #0088cc;
+    }
+
+    #msg {
+        margin-top: 15px;
+        text-align: center;
+        color: #ff4d4d;
+        font-size: 14px;
+        display: none;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="login-box">
+    <h2>Login do Painel</h2>
+
+    <input id="user" type="text" placeholder="Usuário">
+    <input id="pass" type="password" placeholder="Senha">
+
+    <button onclick="login()">Entrar</button>
+
+    <div id="msg">Usuário ou senha incorretos</div>
+</div>
+
+
+<script>
+async function login() {
+    const user = document.getElementById("user").value.trim();
+    const pass = document.getElementById("pass").value.trim();
+    const msg  = document.getElementById("msg");
+
+    msg.style.display = "none";
+
+    if (!user || !pass) {
+        msg.innerText = "Preencha todos os campos";
+        msg.style.display = "block";
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user, pass }),
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+            localStorage.setItem("panel_token", data.token);
+            window.location.href = "/painel";  // caminho do painel
+        } else {
+            msg.innerText = "Usuário ou senha incorretos";
+            msg.style.display = "block";
+        }
+
+    } catch (e) {
+        msg.innerText = "Erro ao conectar ao servidor";
+        msg.style.display = "block";
+    }
+}
+</script>
+
+</body>
+</html>
