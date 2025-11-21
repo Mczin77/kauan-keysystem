@@ -1,20 +1,25 @@
 import { redis } from "./redis.js";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido" });
+  const { key, executor } = req.query;
+  const ip = req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  if (!key) return res.json({ ok: false, error: "No key" });
+
+  const data = await redis.hgetall(`key:${key}`);
+  if (!data.key) return res.json({ ok: false, error: "Invalid key" });
+
+  // Expiração
+  if (data.expiresAt != 0 && Date.now() > Number(data.expiresAt)) {
+    return res.json({ ok: false, error: "Expired" });
   }
 
-  const { email, code } = req.body;
+  // Atualizar usos, IP e executor
+  await redis.hset(`key:${key}`, {
+    uses: Number(data.uses || 0) + 1,
+    usedByIP: ip,
+    executor: executor || data.executor || "-"
+  });
 
-  if (!email || !code)
-    return res.status(400).json({ error: "Dados insuficientes" });
-
-  const data = await redis.hgetall(`user:${email}`);
-
-  if (!data || data.code !== code) {
-    return res.json({ valid: false });
-  }
-
-  return res.json({ valid: true });
+  return res.json({ ok: true });
 }
