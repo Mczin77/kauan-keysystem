@@ -3,122 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel - Login</title>
+<title>Painel</title>
 
 <style>
     body {
+        margin: 0;
+        padding: 0;
         font-family: Arial, sans-serif;
         background: #0f0f0f;
         color: white;
         display: flex;
-        justify-content: center;
-        align-items: center;
         height: 100vh;
-        margin: 0;
     }
 
-    .login-box {
-        background: #1a1a1a;
-        padding: 30px;
-        width: 320px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px #000;
+    /* MENU LATERAL */
+    .sidebar {
+        width: 250px;
+        background: #141414;
+        padding: 20px;
+        box-shadow: 2px 0 10px #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-    h2 {
+    .sidebar h2 {
         text-align: center;
-        margin-bottom: 20px;
         color: #00aaff;
+        margin-bottom: 30px;
     }
 
-    input {
-        width: 100%;
-        padding: 12px;
-        margin: 8px 0;
-        border: none;
-        border-radius: 6px;
-        background: #2a2a2a;
-        color: white;
-        font-size: 15px;
-    }
-
-    button {
-        width: 100%;
+    .sidebar button {
         padding: 12px;
         margin-top: 10px;
         background: #00aaff;
         border: none;
         border-radius: 6px;
         color: white;
-        font-size: 16px;
         cursor: pointer;
         transition: 0.2s;
+        font-size: 16px;
     }
 
-    button:hover {
+    .sidebar button:hover {
         background: #0088cc;
     }
 
-    #msg {
-        margin-top: 15px;
-        text-align: center;
-        color: #ff4d4d;
-        font-size: 14px;
-        display: none;
+    /* ÁREA PRINCIPAL */
+    .main {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
     }
-</style>
 
+    .card {
+        background: #1a1a1a;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #000;
+        margin-bottom: 20px;
+    }
+
+    .card h3 {
+        margin-top: 0;
+        color: #00aaff;
+    }
+
+</style>
 </head>
 <body>
 
-<div class="login-box">
-    <h2>Login do Painel</h2>
+<!-- MENU LADO ESQUERDO -->
+<div class="sidebar">
+    <div>
+        <h2>Painel</h2>
 
-    <input id="user" type="text" placeholder="Usuário">
-    <input id="pass" type="password" placeholder="Senha">
+        <button onclick="loadHome()">🏠 Início</button>
+        <button onclick="loadKeys()">🔑 Gerenciar Keys</button>
+        <button onclick="loadUsers()">👤 Usuários</button>
+    </div>
 
-    <button onclick="login()">Entrar</button>
-
-    <div id="msg">Usuário ou senha incorretos</div>
+    <button onclick="logout()" style="background:#ff4d4d;">Sair</button>
 </div>
 
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="main" id="content">
+</div>
 
 <script>
-async function login() {
-    const user = document.getElementById("user").value.trim();
-    const pass = document.getElementById("pass").value.trim();
-    const msg  = document.getElementById("msg");
-
-    msg.style.display = "none";
-
-    if (!user || !pass) {
-        msg.innerText = "Preencha todos os campos";
-        msg.style.display = "block";
-        return;
-    }
-
-    try {
-        const response = await fetch("/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user, pass }),
-        });
-
-        const data = await response.json();
-
-        if (data.ok) {
-            localStorage.setItem("panel_token", data.token);
-            window.location.href = "/painel";  // caminho do painel
-        } else {
-            msg.innerText = "Usuário ou senha incorretos";
-            msg.style.display = "block";
-        }
-
-    } catch (e) {
-        msg.innerText = "Erro ao conectar ao servidor";
-        msg.style.display = "block";
-    }
+// Checa o token
+if (!localStorage.getItem("panel_token")) {
+    window.location.href = "/";
 }
+
+function logout() {
+    localStorage.removeItem("panel_token");
+    window.location.href = "/";
+}
+
+function loadHome() {
+    document.getElementById("content").innerHTML = `
+        <div class="card">
+            <h3>Bem-vindo ao painel 🎉</h3>
+            <p>Use o menu lateral para navegar e gerenciar seu sistema.</p>
+        </div>
+    `;
+}
+
+function loadKeys() {
+    document.getElementById("content").innerHTML = `
+        <div class="card">
+            <h3>Gerenciar Keys 🔑</h3>
+            <p>Aqui futuramente você irá ver, criar e remover keys.</p>
+        </div>
+    `;
+}
+
+function loadUsers() {
+    document.getElementById("content").innerHTML = `
+        <div class="card">
+            <h3>Usuários 👤</h3>
+            <p>Lista de usuários conectados ou cadastrados aparecerá aqui.</p>
+        </div>
+    `;
+}
+
+// Carrega a home ao entrar
+loadHome();
 </script>
 
 </body>
