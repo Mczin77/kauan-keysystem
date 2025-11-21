@@ -1,11 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/*.js", "use": "@vercel/node" },
-    { "src": "painel/*", "use": "@vercel/static" }
+    { "src": "api/*.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
-    { "src": "/(.*)", "dest": "/painel/index.html" }
+    { "src": "/painel/(.*)", "dest": "/painel/$1" },
+    { "src": "/", "dest": "/painel/index.html" }
   ]
 }
