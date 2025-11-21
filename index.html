@@ -108,7 +108,7 @@ async function login() {
 
         if (data.ok) {
             localStorage.setItem("panel_token", data.token);
-            window.location.href = "/painel";  // caminho do painel
+            window.location.href = "/painel/dashboard.html";  // caminho do painel
         } else {
             msg.innerText = "Usuário ou senha incorretos";
             msg.style.display = "block";
