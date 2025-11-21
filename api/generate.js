@@ -1,54 +1,31 @@
-// /api/generate.js
-import kv from "./kv";
-import { v4 as uuidv4 } from "uuid";
+import { redis } from "./_redis.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "method" });
 
-  const auth = req.headers["x-panel-token"];
-  if (!auth) return res.status(401).json({ error: "unauth" });
+  const token = req.headers["x-panel-token"];
+  if (!token) return res.status(403).json({ ok: false, error: "token" });
 
-  // simple token acceptance (panel must pass the token from /api/login)
-  // you can tighten by storing valid tokens in KV.
-  const body = req.body || {};
-  const type = body.type || "normal"; // normal | vip
-  const days = Number(body.days || 0);
-  const hours = Number(body.hours || 0);
-  const minutes = Number(body.minutes || 0);
+  const { type, days, hours, minutes } = req.body;
 
-  if (!days && !hours && !minutes) {
-    // default 1 day
-  }
+  const expiresAt =
+    type === "vip"
+      ? 0
+      : Date.now() + ((days * 24 + hours) * 60 + minutes) * 60000;
 
-  const ttlMillis =
-    (days * 24 * 60 * 60 * 1000) + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
-
-  const key = (type === "vip" ? "VIP-" : "") + uuidv4().replace(/-/g, "").slice(0, 18).toUpperCase();
-  const createdAt = Date.now();
-  const expiresAt = ttlMillis > 0 ? createdAt + ttlMillis : 0;
+  const key = "KEY-" + Math.random().toString(36).slice(2, 12).toUpperCase();
 
   const data = {
     key,
     type,
-    createdAt,
     expiresAt,
-    status: "active",
-    usedByIP: null,
-    executor: null,
-    uses: 0
+    uses: 0,
+    executor: "",
+    usedByIP: ""
   };
 
-  // store as hash
-  await kv.hset(`key:${key}`, data);
-
-  // also add to an index set for listing
-  await kv.sadd("keys:set", key);
-
-  // set TTL if expiresAt > 0 (set expire in seconds)
-  if (expiresAt > 0) {
-    const ttlSec = Math.ceil((expiresAt - createdAt) / 1000);
-    await kv.expire(`key:${key}`, ttlSec);
-  }
+  await redis.set(`key:${key}`, data);
+  await redis.lpush("keys:list", key);
 
   return res.status(200).json({ ok: true, data });
 }
