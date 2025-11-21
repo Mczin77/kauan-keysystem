@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel</title>
+<title>Painel Administrativo</title>
 
 <style>
     body {
         margin: 0;
         padding: 0;
-        font-family: Arial, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: #0f0f0f;
-        color: white;
+        color: #e0e0e0;
         display: flex;
         height: 100vh;
     }
@@ -21,7 +21,7 @@
         width: 250px;
         background: #141414;
         padding: 20px;
-        box-shadow: 2px 0 10px #000;
+        border-right: 1px solid #333;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -31,104 +31,374 @@
         text-align: center;
         color: #00aaff;
         margin-bottom: 30px;
+        font-size: 22px;
     }
 
     .sidebar button {
+        width: 100%;
         padding: 12px;
         margin-top: 10px;
-        background: #00aaff;
-        border: none;
+        background: transparent;
+        border: 1px solid #333;
         border-radius: 6px;
-        color: white;
+        color: #ccc;
         cursor: pointer;
         transition: 0.2s;
-        font-size: 16px;
+        font-size: 15px;
+        text-align: left;
+        padding-left: 20px;
     }
 
     .sidebar button:hover {
-        background: #0088cc;
+        background: #1f1f1f;
+        border-color: #00aaff;
+        color: #00aaff;
+    }
+
+    .sidebar button.active {
+        background: #00aaff;
+        color: white;
+        border-color: #00aaff;
     }
 
     /* ÁREA PRINCIPAL */
     .main {
         flex: 1;
-        padding: 30px;
+        padding: 40px;
         overflow-y: auto;
     }
 
     .card {
         background: #1a1a1a;
         padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px #000;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         margin-bottom: 20px;
     }
 
     .card h3 {
         margin-top: 0;
         color: #00aaff;
+        border-bottom: 1px solid #333;
+        padding-bottom: 15px;
     }
+
+    /* ESTILOS DO FORMULÁRIO DE CRIAÇÃO */
+    .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-group label {
+        font-size: 12px;
+        margin-bottom: 5px;
+        color: #888;
+    }
+
+    input, select {
+        background: #252525;
+        border: 1px solid #333;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    input:focus, select:focus {
+        border-color: #00aaff;
+    }
+
+    .btn-primary {
+        background: #00aaff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-primary:hover { background: #0088cc; }
+
+    /* ESTILOS DA TABELA */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    th {
+        text-align: left;
+        padding: 12px;
+        background: #252525;
+        color: #aaa;
+        font-weight: normal;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    tr:hover td {
+        background: #202020;
+    }
+
+    .tag-vip {
+        background: #ffd700;
+        color: #000;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .tag-time {
+        background: #00aaff;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+    }
+
+    .btn-delete {
+        background: #ff4d4d;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .btn-delete:hover { background: #cc0000; }
 
 </style>
 </head>
 <body>
 
-<!-- MENU LADO ESQUERDO -->
 <div class="sidebar">
     <div>
-        <h2>Painel</h2>
-
+        <h2>⚡ Painel</h2>
         <button onclick="loadHome()">🏠 Início</button>
         <button onclick="loadKeys()">🔑 Gerenciar Keys</button>
         <button onclick="loadUsers()">👤 Usuários</button>
     </div>
 
-    <button onclick="logout()" style="background:#ff4d4d;">Sair</button>
+    <button onclick="logout()" style="border-color:#ff4d4d; color:#ff4d4d;">🚪 Sair</button>
 </div>
 
-<!-- CONTEÚDO PRINCIPAL -->
 <div class="main" id="content">
-</div>
+    </div>
 
 <script>
-// Checa o token
-if (!localStorage.getItem("panel_token")) {
+// 1. Autenticação: Verifica se tem token
+const token = localStorage.getItem("panel_token");
+if (!token) {
     window.location.href = "/";
 }
 
+// Função de Logout
 function logout() {
     localStorage.removeItem("panel_token");
     window.location.href = "/";
 }
 
+// --- FUNÇÕES DE CARREGAMENTO DE PÁGINA ---
+
 function loadHome() {
     document.getElementById("content").innerHTML = `
         <div class="card">
             <h3>Bem-vindo ao painel 🎉</h3>
-            <p>Use o menu lateral para navegar e gerenciar seu sistema.</p>
+            <p>Selecione uma opção no menu lateral para começar.</p>
         </div>
     `;
 }
 
-function loadKeys() {
-    document.getElementById("content").innerHTML = `
+async function loadKeys() {
+    const contentDiv = document.getElementById("content");
+    
+    // Mostra carregando
+    contentDiv.innerHTML = '<div class="card"><h3>Carregando keys...</h3></div>';
+
+    try {
+        const response = await fetch("/api/list", {
+            method: "GET",
+            headers: { "x-panel-token": token }
+        });
+        const data = await response.json();
+
+        if (!data.ok) throw new Error("Erro ao buscar keys");
+
+        // Monta o HTML da página de Keys
+        let html = `
         <div class="card">
-            <h3>Gerenciar Keys 🔑</h3>
-            <p>Aqui futuramente você irá ver, criar e remover keys.</p>
+            <h3>Gerar Nova Key ⚡</h3>
+            
+            <div class="form-row">
+                <div class="input-group">
+                    <label>Tipo</label>
+                    <select id="typeInput">
+                        <option value="temp">Temporário</option>
+                        <option value="vip">VIP (Permanente)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Dias</label>
+                    <input type="number" id="daysInput" value="1" min="0" style="width: 60px;">
+                </div>
+
+                <div class="input-group">
+                    <label>Horas</label>
+                    <input type="number" id="hoursInput" value="0" min="0" style="width: 60px;">
+                </div>
+
+                <button class="btn-primary" onclick="createKey()">+ Gerar Key</button>
+            </div>
         </div>
-    `;
+
+        <div class="card">
+            <h3>Lista de Keys (${data.keys.length})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Tipo</th>
+                        <th>Validade</th>
+                        <th>Usos</th>
+                        <th>Executor / IP</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        // Itera sobre as keys e cria as linhas da tabela
+        data.keys.forEach(k => {
+            // Formata a validade
+            let validade = "Expirado";
+            if (k.type === "vip") {
+                validade = "∞ Permanente";
+            } else if (k.expiresAt) {
+                const date = new Date(Number(k.expiresAt));
+                if (Date.now() > Number(k.expiresAt)) {
+                    validade = `<span style="color:#ff4d4d">Expirada</span>`;
+                } else {
+                    validade = date.toLocaleString('pt-BR');
+                }
+            }
+
+            // Formata a Badge de tipo
+            const typeBadge = k.type === "vip" 
+                ? `<span class="tag-vip">VIP</span>` 
+                : `<span class="tag-time">TEMP</span>`;
+
+            html += `
+                <tr>
+                    <td style="font-family: monospace; color: #00aaff;">${k.key}</td>
+                    <td>${typeBadge}</td>
+                    <td>${validade}</td>
+                    <td>${k.uses || 0}</td>
+                    <td style="font-size:12px; color:#888;">${k.executor || "-"} <br> ${k.usedByIP || "-"}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteKey('${k.key}')">🗑</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        contentDiv.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro ao carregar keys</h3><p>${error.message}</p></div>`;
+    }
+}
+
+// --- FUNÇÕES DE AÇÃO (API) ---
+
+async function createKey() {
+    const type = document.getElementById("typeInput").value;
+    const days = parseInt(document.getElementById("daysInput").value) || 0;
+    const hours = parseInt(document.getElementById("hoursInput").value) || 0;
+
+    // Feedback visual simples (botão muda texto)
+    const btn = document.querySelector(".btn-primary");
+    const oldText = btn.innerText;
+    btn.innerText = "Criando...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch("/api/generate", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "x-panel-token": token 
+            },
+            body: JSON.stringify({ type, days, hours, minutes: 0 })
+        });
+        
+        const json = await res.json();
+        
+        if (json.ok) {
+            // Recarrega a lista para mostrar a nova key
+            loadKeys(); 
+        } else {
+            alert("Erro ao criar: " + json.error);
+        }
+
+    } catch (e) {
+        alert("Erro de conexão");
+    } finally {
+        btn.innerText = oldText;
+        btn.disabled = false;
+    }
+}
+
+async function deleteKey(key) {
+    if (!confirm(`Tem certeza que deseja apagar a key ${key}?`)) return;
+
+    try {
+        const res = await fetch("/api/delete", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "x-panel-token": token 
+            },
+            body: JSON.stringify({ key })
+        });
+
+        const json = await res.json();
+
+        if (json.ok) {
+            loadKeys(); // Recarrega a lista
+        } else {
+            alert("Erro ao deletar");
+        }
+    } catch (e) {
+        alert("Erro ao conectar");
+    }
 }
 
 function loadUsers() {
     document.getElementById("content").innerHTML = `
         <div class="card">
             <h3>Usuários 👤</h3>
-            <p>Lista de usuários conectados ou cadastrados aparecerá aqui.</p>
+            <p>Ainda não implementado. Aqui você pode listar usuários do seu app.</p>
         </div>
     `;
 }
 
-// Carrega a home ao entrar
+// Carrega a home ao iniciar
 loadHome();
 </script>
 
