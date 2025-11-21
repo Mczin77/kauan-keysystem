@@ -21,5 +21,9 @@ export default async function handler(req, res) {
     executor: executor || data.executor || "-"
   });
 
-  return res.json({ ok: true });
+  // MUDANÇA AQUI: Retorna o expiresAt na resposta de sucesso
+  return res.json({ 
+      ok: true, 
+      expiresAt: Number(data.expiresAt)
+  });
 }
