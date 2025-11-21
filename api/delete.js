@@ -1,15 +1,14 @@
 import { redis } from "./redis.js";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "method" });
+  if (req.method !== "DELETE") {
+    return res.status(405).json({ error: "Método não permitido" });
+  }
 
-  const token = req.headers["x-panel-token"];
-  if (!token) return res.status(403).json({ ok: false });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email obrigatório" });
 
-  const { key } = req.body;
+  await redis.del(`user:${email}`);
 
-  await redis.del(`key:${key}`);
-  await redis.lrem("keys:list", 0, key);
-
-  return res.status(200).json({ ok: true });
+  return res.json({ success: true });
 }
