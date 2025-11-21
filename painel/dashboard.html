@@ -55,12 +55,6 @@
         color: #00aaff;
     }
 
-    .sidebar button.active {
-        background: #00aaff;
-        color: white;
-        border-color: #00aaff;
-    }
-
     /* ÁREA PRINCIPAL */
     .main {
         flex: 1;
@@ -83,7 +77,7 @@
         padding-bottom: 15px;
     }
 
-    /* ESTILOS DO FORMULÁRIO DE CRIAÇÃO */
+    /* FORMULÁRIOS */
     .form-row {
         display: flex;
         gap: 10px;
@@ -95,6 +89,7 @@
     .input-group {
         display: flex;
         flex-direction: column;
+        flex: 1;
     }
 
     .input-group label {
@@ -110,6 +105,8 @@
         padding: 10px;
         border-radius: 5px;
         outline: none;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     input:focus, select:focus {
@@ -124,10 +121,11 @@
         border-radius: 5px;
         cursor: pointer;
         font-weight: bold;
+        white-space: nowrap;
     }
     .btn-primary:hover { background: #0088cc; }
 
-    /* ESTILOS DA TABELA */
+    /* TABELAS */
     table {
         width: 100%;
         border-collapse: collapse;
@@ -146,28 +144,15 @@
     td {
         padding: 12px;
         border-bottom: 1px solid #2a2a2a;
+        vertical-align: middle;
     }
 
     tr:hover td {
         background: #202020;
     }
 
-    .tag-vip {
-        background: #ffd700;
-        color: #000;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 11px;
-        font-weight: bold;
-    }
-
-    .tag-time {
-        background: #00aaff;
-        color: #fff;
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 11px;
-    }
+    .tag-vip { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+    .tag-time { background: #00aaff; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
 
     .btn-delete {
         background: #ff4d4d;
@@ -180,6 +165,18 @@
     }
     .btn-delete:hover { background: #cc0000; }
 
+    /* User Info Box */
+    .discord-box {
+        display: flex; 
+        align-items: center; 
+        gap: 15px; 
+        background: #222; 
+        padding: 15px; 
+        border-radius: 8px; 
+        border: 1px solid #333;
+        margin-top: 20px;
+    }
+
 </style>
 </head>
 <body>
@@ -189,7 +186,7 @@
         <h2>⚡ Painel</h2>
         <button onclick="loadHome()">🏠 Início</button>
         <button onclick="loadKeys()">🔑 Gerenciar Keys</button>
-        <button onclick="loadUsers()">👤 Usuários</button>
+        <button onclick="loadUsers()">👤 Usuários & Discord</button>
     </div>
 
     <button onclick="logout()" style="border-color:#ff4d4d; color:#ff4d4d;">🚪 Sair</button>
@@ -199,19 +196,21 @@
     </div>
 
 <script>
-// 1. Autenticação: Verifica se tem token
+// --- AUTENTICAÇÃO ---
 const token = localStorage.getItem("panel_token");
 if (!token) {
     window.location.href = "/";
 }
 
-// Função de Logout
 function logout() {
     localStorage.removeItem("panel_token");
     window.location.href = "/";
 }
 
-// --- FUNÇÕES DE CARREGAMENTO DE PÁGINA ---
+// --- VARIÁVEIS GLOBAIS ---
+let foundUser = null; // Armazena o usuário do Discord encontrado
+
+// --- CARREGAMENTO DE PÁGINAS ---
 
 function loadHome() {
     document.getElementById("content").innerHTML = `
@@ -224,8 +223,6 @@ function loadHome() {
 
 async function loadKeys() {
     const contentDiv = document.getElementById("content");
-    
-    // Mostra carregando
     contentDiv.innerHTML = '<div class="card"><h3>Carregando keys...</h3></div>';
 
     try {
@@ -237,31 +234,29 @@ async function loadKeys() {
 
         if (!data.ok) throw new Error("Erro ao buscar keys");
 
-        // Monta o HTML da página de Keys
         let html = `
         <div class="card">
             <h3>Gerar Nova Key ⚡</h3>
-            
             <div class="form-row">
-                <div class="input-group">
+                <div class="input-group" style="flex:none; width: 150px;">
                     <label>Tipo</label>
                     <select id="typeInput">
                         <option value="temp">Temporário</option>
                         <option value="vip">VIP (Permanente)</option>
                     </select>
                 </div>
-
-                <div class="input-group">
+                <div class="input-group" style="flex:none; width: 80px;">
                     <label>Dias</label>
-                    <input type="number" id="daysInput" value="1" min="0" style="width: 60px;">
+                    <input type="number" id="daysInput" value="1" min="0">
                 </div>
-
-                <div class="input-group">
+                <div class="input-group" style="flex:none; width: 80px;">
                     <label>Horas</label>
-                    <input type="number" id="hoursInput" value="0" min="0" style="width: 60px;">
+                    <input type="number" id="hoursInput" value="0" min="0">
                 </div>
-
-                <button class="btn-primary" onclick="createKey()">+ Gerar Key</button>
+                <div class="input-group" style="flex:none;">
+                    <label>&nbsp;</label>
+                    <button class="btn-primary" onclick="createKey()">+ Gerar Key</button>
+                </div>
             </div>
         </div>
 
@@ -274,32 +269,33 @@ async function loadKeys() {
                         <th>Tipo</th>
                         <th>Validade</th>
                         <th>Usos</th>
-                        <th>Executor / IP</th>
+                        <th>Dono (Discord)</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
-        // Itera sobre as keys e cria as linhas da tabela
         data.keys.forEach(k => {
-            // Formata a validade
             let validade = "Expirado";
-            if (k.type === "vip") {
-                validade = "∞ Permanente";
-            } else if (k.expiresAt) {
-                const date = new Date(Number(k.expiresAt));
-                if (Date.now() > Number(k.expiresAt)) {
-                    validade = `<span style="color:#ff4d4d">Expirada</span>`;
-                } else {
-                    validade = date.toLocaleString('pt-BR');
-                }
-            }
+            if (k.type === "vip") validade = "∞ Permanente";
+            else if (k.expiresAt && Date.now() > Number(k.expiresAt)) validade = `<span style="color:#ff4d4d">Expirada</span>`;
+            else if (k.expiresAt) validade = new Date(Number(k.expiresAt)).toLocaleString('pt-BR');
 
-            // Formata a Badge de tipo
-            const typeBadge = k.type === "vip" 
-                ? `<span class="tag-vip">VIP</span>` 
-                : `<span class="tag-time">TEMP</span>`;
+            const typeBadge = k.type === "vip" ? `<span class="tag-vip">VIP</span>` : `<span class="tag-time">TEMP</span>`;
+            
+            // Mostra info do dono se existir
+            let ownerInfo = "-";
+            if(k.ownerName) {
+                ownerInfo = `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <img src="${k.ownerAvatar}" style="width:20px; height:20px; border-radius:50%;">
+                        <span>${k.ownerName}</span>
+                    </div>`;
+            } else {
+                 // Se não tem dono, mostra info de execução (IP)
+                 ownerInfo = `<span style="font-size:12px; color:#888;">IP: ${k.usedByIP || "-"}</span>`;
+            }
 
             html += `
                 <tr>
@@ -307,10 +303,8 @@ async function loadKeys() {
                     <td>${typeBadge}</td>
                     <td>${validade}</td>
                     <td>${k.uses || 0}</td>
-                    <td style="font-size:12px; color:#888;">${k.executor || "-"} <br> ${k.usedByIP || "-"}</td>
-                    <td>
-                        <button class="btn-delete" onclick="deleteKey('${k.key}')">🗑</button>
-                    </td>
+                    <td>${ownerInfo}</td>
+                    <td><button class="btn-delete" onclick="deleteKey('${k.key}')">🗑</button></td>
                 </tr>
             `;
         });
@@ -319,86 +313,211 @@ async function loadKeys() {
         contentDiv.innerHTML = html;
 
     } catch (error) {
-        console.error(error);
-        contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro ao carregar keys</h3><p>${error.message}</p></div>`;
+        contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro</h3><p>${error.message}</p></div>`;
     }
 }
 
-// --- FUNÇÕES DE AÇÃO (API) ---
+async function loadUsers() {
+    const contentDiv = document.getElementById("content");
+    contentDiv.innerHTML = '<div class="card"><h3>Carregando...</h3></div>';
+
+    try {
+        // Busca keys para popular o Select
+        const resKeys = await fetch("/api/list", { headers: { "x-panel-token": token } });
+        const dataKeys = await resKeys.json();
+        const allKeys = dataKeys.keys || [];
+
+        let optionsHtml = `<option value="">Selecione uma Key...</option>`;
+        allKeys.forEach(k => {
+            const status = k.ownerName ? `(Dono: ${k.ownerName})` : "(Livre)";
+            optionsHtml += `<option value="${k.key}">${k.key} - ${k.type.toUpperCase()} ${status}</option>`;
+        });
+
+        contentDiv.innerHTML = `
+            <div class="card">
+                <h3>Vincular Discord a uma Key 🎮</h3>
+                <p style="color:#888; font-size:13px; margin-bottom:15px;">
+                    Cole o <b>ID do usuário</b> (ex: 70123...) para buscar a foto, depois selecione a key dele.
+                </p>
+
+                <div class="form-row" style="align-items: flex-end;">
+                    <div class="input-group" style="flex:1">
+                        <label>ID do Discord</label>
+                        <input type="text" id="discordIdInput" placeholder="Ex: 298561...">
+                    </div>
+                    <div class="input-group" style="flex:none;">
+                        <label>&nbsp;</label>
+                        <button class="btn-primary" onclick="searchDiscordUser()">🔍 Buscar Usuário</button>
+                    </div>
+                </div>
+
+                <div id="discordResult" class="discord-box" style="display:none;">
+                    <img id="userAvatar" src="" style="width:60px; height:60px; border-radius:50%; border:2px solid #00aaff;">
+                    <div>
+                        <h4 id="userName" style="margin:0; color:white;">User</h4>
+                        <span id="userIdDisplay" style="font-size:12px; color:#888;">ID: 000</span>
+                    </div>
+                </div>
+
+                <div id="assignArea" style="display:none; margin-top:20px;">
+                    <div class="input-group">
+                        <label>Escolha a Key para este usuário:</label>
+                        <select id="keySelect" style="width:100%; padding:12px;">${optionsHtml}</select>
+                    </div>
+                    <button class="btn-primary" style="width:100%; margin-top:15px; background:#00d26a;" onclick="saveUserToKey()">✅ Vincular Usuário à Key</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Usuários Vinculados</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Key Vinculada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        `;
+
+        renderLinkedUsers(allKeys);
+
+    } catch (e) {
+        contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro</h3><p>${e.message}</p></div>`;
+    }
+}
+
+// --- LÓGICA DO DISCORD ---
+
+async function searchDiscordUser() {
+    const id = document.getElementById("discordIdInput").value.trim();
+    if (!id) return alert("Digite um ID!");
+
+    const btn = document.querySelector("button[onclick='searchDiscordUser()']");
+    const oldText = btn.innerText;
+    btn.innerText = "Buscando...";
+    
+    try {
+        const res = await fetch(`/api/discord?id=${id}`);
+        const data = await res.json();
+
+        if (!data.ok) {
+            alert("Usuário não encontrado! Verifique se o ID está correto e se o token do Bot está configurado.");
+            document.getElementById("discordResult").style.display = "none";
+            document.getElementById("assignArea").style.display = "none";
+        } else {
+            foundUser = data; 
+            document.getElementById("discordResult").style.display = "flex";
+            document.getElementById("assignArea").style.display = "block";
+            
+            document.getElementById("userAvatar").src = data.avatar;
+            document.getElementById("userName").innerText = data.global_name || data.username;
+            document.getElementById("userIdDisplay").innerText = "ID: " + data.id;
+        }
+    } catch (e) {
+        alert("Erro na API");
+    } finally {
+        btn.innerText = oldText;
+    }
+}
+
+async function saveUserToKey() {
+    const key = document.getElementById("keySelect").value;
+    if (!key || !foundUser) return alert("Selecione uma key e busque um usuário primeiro.");
+
+    if(!confirm(`Vincular ${foundUser.username} à key ${key}?`)) return;
+
+    try {
+        const res = await fetch("/api/assign", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-panel-token": token },
+            body: JSON.stringify({
+                key: key,
+                discordId: foundUser.id,
+                discordName: foundUser.username,
+                discordAvatar: foundUser.avatar
+            })
+        });
+
+        const json = await res.json();
+        if (json.ok) {
+            alert("Vinculado com sucesso!");
+            loadUsers(); // Recarrega a tela
+        } else {
+            alert("Erro: " + json.error);
+        }
+    } catch (e) {
+        alert("Erro ao salvar");
+    }
+}
+
+function renderLinkedUsers(keys) {
+    const tbody = document.getElementById("usersTableBody");
+    const linkedKeys = keys.filter(k => k.ownerId); // Filtra só quem tem dono
+
+    if (linkedKeys.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; padding:20px; color:#666;'>Nenhum usuário vinculado ainda.</td></tr>";
+        return;
+    }
+
+    let html = "";
+    linkedKeys.forEach(k => {
+        html += `
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${k.ownerAvatar}" style="width:30px; height:30px; border-radius:50%;">
+                        <span>${k.ownerName}</span>
+                    </div>
+                </td>
+                <td style="font-family:monospace; color:#00aaff;">${k.key}</td>
+                <td><button class="btn-delete" onclick="alert('Delete a key para desvincular.')">Desvincular</button></td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+// --- FUNÇÕES DE API (KEYS) ---
 
 async function createKey() {
     const type = document.getElementById("typeInput").value;
     const days = parseInt(document.getElementById("daysInput").value) || 0;
     const hours = parseInt(document.getElementById("hoursInput").value) || 0;
-
-    // Feedback visual simples (botão muda texto)
-    const btn = document.querySelector(".btn-primary");
-    const oldText = btn.innerText;
-    btn.innerText = "Criando...";
-    btn.disabled = true;
+    
+    const btn = document.querySelector("button[onclick='createKey()']");
+    btn.innerText = "..."; btn.disabled = true;
 
     try {
         const res = await fetch("/api/generate", {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "x-panel-token": token 
-            },
+            headers: { "Content-Type": "application/json", "x-panel-token": token },
             body: JSON.stringify({ type, days, hours, minutes: 0 })
         });
-        
         const json = await res.json();
-        
-        if (json.ok) {
-            // Recarrega a lista para mostrar a nova key
-            loadKeys(); 
-        } else {
-            alert("Erro ao criar: " + json.error);
-        }
-
-    } catch (e) {
-        alert("Erro de conexão");
-    } finally {
-        btn.innerText = oldText;
-        btn.disabled = false;
-    }
+        if (json.ok) loadKeys();
+        else alert("Erro: " + json.error);
+    } catch (e) { alert("Erro conexão"); } 
+    finally { btn.innerText = "+ Gerar Key"; btn.disabled = false; }
 }
 
 async function deleteKey(key) {
-    if (!confirm(`Tem certeza que deseja apagar a key ${key}?`)) return;
-
+    if (!confirm(`Apagar a key ${key}?`)) return;
     try {
         const res = await fetch("/api/delete", {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "x-panel-token": token 
-            },
+            headers: { "Content-Type": "application/json", "x-panel-token": token },
             body: JSON.stringify({ key })
         });
-
-        const json = await res.json();
-
-        if (json.ok) {
-            loadKeys(); // Recarrega a lista
-        } else {
-            alert("Erro ao deletar");
-        }
-    } catch (e) {
-        alert("Erro ao conectar");
-    }
+        if ((await res.json()).ok) loadKeys();
+        else alert("Erro ao deletar");
+    } catch (e) { alert("Erro conexão"); }
 }
 
-function loadUsers() {
-    document.getElementById("content").innerHTML = `
-        <div class="card">
-            <h3>Usuários 👤</h3>
-            <p>Ainda não implementado. Aqui você pode listar usuários do seu app.</p>
-        </div>
-    `;
-}
-
-// Carrega a home ao iniciar
+// Inicia na Home
 loadHome();
 </script>
 
