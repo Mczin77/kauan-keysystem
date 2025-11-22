@@ -227,7 +227,8 @@ async function revokeKey(key, state) {
             alert(`Key ${key} ${action} com sucesso!`);
             loadKeys(); // Recarrega a tabela
         } else {
-            alert(`Erro ao ${action}: ${data.error || 'Falha na comunicação com a API.'}`);
+            // Se der erro, usa a mensagem do backend
+            alert(`Erro ao ${action}: ${data.error || 'Falha na comunicação com a API.'}`); 
         }
     } catch (error) {
         console.error('Erro de rede ao revogar key:', error);
@@ -287,7 +288,8 @@ async function loadKeys() {
                         <th>Key</th>
                         <th>Tipo</th>
                         <th>Validade</th>
-                        <th>Usos</th> <th>HWID Vinculado</th>
+                        <th>Usos</th> 
+                        <th>HWID Vinculado</th>
                         <th>Último Uso</th>
                         <th>Sessão Ativa</th> <th>Revogado</th>
                         <th>Dono (Discord)</th>
@@ -301,7 +303,7 @@ async function loadKeys() {
             const isExpired = k.expiresAt && k.expiresAt != 0 && Date.now() > Number(k.expiresAt);
             const isRevoked = k.revoked === "true"; 
             
-            // NOVO: Lógica de Sessão Ativa
+            // Lógica de Sessão Ativa
             const sessionExpirationTime = Number(k.sessionExpiresAt || 0);
             const isSessionActive = Date.now() < sessionExpirationTime;
             const sessionStatus = isSessionActive 
@@ -498,7 +500,7 @@ async function createKey() {
     try {
         const res = await fetch("/api/generate", {
             method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-            // REMOVIDO: maxUses. A lógica de uso simultâneo é automática agora.
+            // Envia apenas os campos necessários (tempo), sem o 'maxUses'
             body: JSON.stringify({ type, days, hours, minutes: 0 }) 
         });
         const data = await res.json();
