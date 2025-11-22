@@ -10,7 +10,8 @@ export default async function handler(req, res) {
   // valida token simples (não é super seguro, mas funciona pra painel)
   if (!token.includes(":")) return res.status(401).json({ error: "Token inválido" });
 
-  const { type, days, hours, minutes } = req.body;
+  // NOVO: Adiciona maxUses na desestruturação
+  const { type, days, hours, minutes, maxUses } = req.body;
 
   const key = Math.random().toString(36).substring(2, 12).toUpperCase();
 
@@ -24,6 +25,9 @@ export default async function handler(req, res) {
 
     expiresAt = Date.now() + totalMs;
   }
+    
+  // Define 0 como infinito, caso contrário, usa o valor fornecido
+  const maxUsesValue = Number(maxUses) >= 0 ? Number(maxUses) : 0;
 
   const obj = {
     key,
@@ -32,9 +36,10 @@ export default async function handler(req, res) {
     uses: 0,
     executor: "-",
     usedByIP: "-",
-    hwid: "-",        // NOVO: Inicializa o campo HWID
-    revoked: "false", // NOVO: Inicializa o flag de revogação
-    lastUsedAt: 0     // NOVO: Inicializa o timestamp de último uso
+    hwid: "-",
+    revoked: "false",
+    lastUsedAt: 0,
+    maxUses: maxUsesValue // NOVO
   };
 
   await redis.hset(`key:${key}`, obj);
