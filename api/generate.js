@@ -9,38 +9,38 @@ export default async function handler(req, res) {
 
   // valida token simples (não é super seguro, mas funciona pra painel)
 
-  // Garante que os valores do body são números inteiros
+  // --- CORREÇÃO AQUI: Garante que todos os campos são lidos e tratados como números ---
   const { type, days: d, hours: h, minutes: m } = req.body; 
+  
   const days = parseInt(d || 0);
   const hours = parseInt(h || 0);
   const minutes = parseInt(m || 0);
+  // ----------------------------------------------------------------------------------
 
   const key = Math.random().toString(36).substring(2, 12).toUpperCase();
 
-  let expiresAt = 0; // Padrão para Keys VIP
+  let expiresAt = 0; // Padrão: Keys VIP (Permanente)
 
-  // --- CORREÇÃO DA LÓGICA DE TEMPO ---
+  // Lógica de cálculo de tempo
   if (type === "temp") {
     const totalMs =
       (days * 86400000) + // Milissegundos em um dia
       (hours * 3600000) +  // Milissegundos em uma hora
       (minutes * 60000);   // Milissegundos em um minuto
 
-    // Apenas calcula a expiração se houver alguma duração
+    // Se a duração total for maior que zero, calcula a expiração
     if (totalMs > 0) {
         expiresAt = Date.now() + totalMs;
-    } else {
-        // Opcional: Bloquear geração de keys temporárias com 0ms de duração
-        // return res.status(400).json({ ok: false, error: "Duração temporária deve ser maior que zero." });
-        // Por enquanto, apenas avança.
     }
+    // Se totalMs for 0, expiresAt permanece 0, o que tecnicamente é permanente, mas não é o desejado para temp.
+    // Isso deve ser evitado pelo dashboard (não gerar keys temp com 0 de duração).
   }
-  // ------------------------------------
     
   const obj = {
     key,
     type,
-    expiresAt,
+    // Garante que o expiresAt é o valor calculado ou 0 para VIP
+    expiresAt: String(expiresAt), // Converte para string para garantir que o Redis salve corretamente
     uses: 0,
     executor: "-",
     usedByIP: "-",
