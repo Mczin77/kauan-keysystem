@@ -270,10 +270,6 @@ async function loadKeys() {
                     <label>Horas</label>
                     <input type="number" id="hoursInput" value="0" min="0">
                 </div>
-                <div class="input-group" style="flex:none; width: 120px;">
-                    <label>Max Usos (0=Infinito)</label>
-                    <input type="number" id="maxUsesInput" value="0" min="0">
-                </div>
                 <div class="input-group" style="flex:none;">
                     <label>&nbsp;</label>
                     <button class="btn-primary" onclick="createKey()">+ Gerar Key</button>
@@ -291,9 +287,9 @@ async function loadKeys() {
                         <th>Key</th>
                         <th>Tipo</th>
                         <th>Validade</th>
-                        <th>Usos (Max)</th> <th>HWID Vinculado</th>
+                        <th>Usos</th> <th>HWID Vinculado</th>
                         <th>Último Uso</th>
-                        <th>Revogado</th>
+                        <th>Sessão Ativa</th> <th>Revogado</th>
                         <th>Dono (Discord)</th>
                         <th>Ações</th>
                     </tr>
@@ -304,6 +300,13 @@ async function loadKeys() {
         data.keys.forEach(k => {
             const isExpired = k.expiresAt && k.expiresAt != 0 && Date.now() > Number(k.expiresAt);
             const isRevoked = k.revoked === "true"; 
+            
+            // NOVO: Lógica de Sessão Ativa
+            const sessionExpirationTime = Number(k.sessionExpiresAt || 0);
+            const isSessionActive = Date.now() < sessionExpirationTime;
+            const sessionStatus = isSessionActive 
+                ? `<span class="tag-time">ATIVA</span>` 
+                : "Não";
 
             let validade = isExpired ? `<span style="color:#ff4d4d">Expirada</span>` : formatTime(k.expiresAt);
             
@@ -335,10 +338,6 @@ async function loadKeys() {
             const hwidDisplay = k.hwid && k.hwid !== "-" ? `<span title="${k.hwid}">${k.hwid.substring(0, 10)}...</span>` : 'N/A';
             const lastUsedDisplay = formatLastUsed(k.lastUsedAt || 0);
 
-            // NOVO: Display de Usos (Atual / Máximo)
-            const maxDisplay = k.maxUses == 0 ? "∞" : k.maxUses;
-            const usesDisplay = `${k.uses || 0} / ${maxDisplay}`;
-
             // Estilo de linha para revogadas/expiradas
             const rowStyle = isRevoked ? 'style="background-color: #381515;"' : (isExpired ? 'style="background-color: #302020;"' : '');
 
@@ -348,9 +347,10 @@ async function loadKeys() {
                     <td style="font-family: monospace; color: #00aaff;">${k.key}</td>
                     <td>${typeBadge}</td>
                     <td>${validade}</td>
-                    <td>${usesDisplay}</td> <td>${hwidDisplay}</td>
+                    <td>${k.uses || 0}</td>
+                    <td>${hwidDisplay}</td>
                     <td>${lastUsedDisplay}</td>
-                    <td>${revokedBadge}</td>
+                    <td>${sessionStatus}</td> <td>${revokedBadge}</td>
                     <td>${ownerInfo}</td>
                     <td>${actionButtons}</td>
                 </tr>
@@ -491,7 +491,6 @@ async function createKey() {
     const type = document.getElementById("typeInput").value;
     const days = parseInt(document.getElementById("daysInput").value) || 0;
     const hours = parseInt(document.getElementById("hoursInput").value) || 0;
-    const maxUses = parseInt(document.getElementById("maxUsesInput").value) || 0; // NOVO: Captura o valor
     const resultElement = document.getElementById("generateResult");
 
     resultElement.innerHTML = "Gerando...";
@@ -499,8 +498,8 @@ async function createKey() {
     try {
         const res = await fetch("/api/generate", {
             method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-            // NOVO: Adiciona maxUses ao corpo
-            body: JSON.stringify({ type, days, hours, minutes: 0, maxUses }) 
+            // REMOVIDO: maxUses. A lógica de uso simultâneo é automática agora.
+            body: JSON.stringify({ type, days, hours, minutes: 0 }) 
         });
         const data = await res.json();
         if (data.ok) {
