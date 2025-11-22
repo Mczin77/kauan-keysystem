@@ -10,8 +10,23 @@ export default async function handler(req, res) {
   const keys = await redis.keys("key:*");
   const out = [];
 
+  // Valores padrão para evitar que o painel quebre se a Key for antiga
+  const defaults = {
+    hwid: "-",
+    revoked: "false",
+    lastUsedAt: 0,
+    sessionExpiresAt: 0, 
+    currentSessionHWID: "-",
+    ownerId: "",
+    ownerName: "",
+    ownerAvatar: ""
+  };
+
   for (let k of keys) {
-    const data = await redis.hgetall(k);
+    let data = await redis.hgetall(k);
+    
+    // Mescla os dados existentes com os valores padrão para garantir que todos os campos existam
+    data = { ...defaults, ...data };
     out.push(data);
   }
 
