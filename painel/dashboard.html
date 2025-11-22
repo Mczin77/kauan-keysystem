@@ -491,24 +491,36 @@ function renderLinkedUsers(keys) {
 
 async function createKey() {
     const type = document.getElementById("typeInput").value;
-    const days = parseInt(document.getElementById("daysInput").value) || 0;
-    const hours = parseInt(document.getElementById("hoursInput").value) || 0;
-    const resultElement = document.getElementById("generateResult");
+    // Pega os valores como string primeiro para ver o que tem lá
+    const rawDays = document.getElementById("daysInput").value;
+    const rawHours = document.getElementById("hoursInput").value;
+    
+    const days = parseInt(rawDays) || 0;
+    const hours = parseInt(rawHours) || 0;
+    
+    const payload = { type, days, hours, minutes: 0 };
+    
+    // --- DIAGNÓSTICO VISUAL ---
+    // Isso vai abrir um alerta na sua tela.
+    // Se aqui mostrar "days": 0, o problema é no seu HTML (IDs errados ou inputs vazios).
+    alert(`ENVIANDO PARA API:\n${JSON.stringify(payload, null, 2)}`);
+    // --------------------------
 
+    const resultElement = document.getElementById("generateResult");
     resultElement.innerHTML = "Gerando...";
     
     try {
         const res = await fetch("/api/generate", {
             method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-            // Envia apenas os campos necessários (tempo), sem o 'maxUses'
-            body: JSON.stringify({ type, days, hours, minutes: 0 }) 
+            body: JSON.stringify(payload) 
         });
         const data = await res.json();
+        
         if (data.ok) {
             resultElement.innerHTML = `✅ Key Gerada: <strong style="color:#2ecc71;">${data.data.key}</strong>`;
             loadKeys(); 
         } else { 
-            resultElement.innerHTML = `❌ Erro ao criar: <span style="color:#e74c3c;">${data.error || 'Erro desconhecido'}</span>`;
+            resultElement.innerHTML = `❌ Erro: ${data.error || 'Erro desconhecido'}`;
         }
     } catch (e) { 
         resultElement.innerHTML = `❌ Erro de conexão.`;
