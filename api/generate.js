@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     usedByIP: "-",
     // CAMPOS NOVOS/NECESSÁRIOS (Mesmo que vazios)
     hwid: "-",
-    revoked: "false", // ESSENCIAL para a revogação
+    revoked: "false",
     lastUsedAt: 0,
     sessionExpiresAt: 0, 
     currentSessionHWID: "-", 
@@ -44,7 +44,12 @@ export default async function handler(req, res) {
     ownerAvatar: ""
   };
 
-  await redis.hset(`key:${key}`, obj);
+  // --- CORREÇÃO AQUI ---
+  // Transforma o objeto em uma lista [campo, valor, campo, valor, ...]
+  const fieldsAndValues = Object.entries(obj).flat();
+  // Passa a lista espalhada para o hset para máxima compatibilidade
+  await redis.hset(`key:${key}`, ...fieldsAndValues);
+  // ---------------------
 
   return res.json({ ok: true, data: obj });
 }
