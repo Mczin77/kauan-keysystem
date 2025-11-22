@@ -1,41 +1,53 @@
 import { redis } from "./redis.js";
 
 export default async function handler(req, res) {
+  // Configuração CORS básica para garantir que não seja bloqueado
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-panel-token');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST")
     return res.status(405).json({ error: "Método não permitido" });
 
   const token = req.headers["x-panel-token"];
   if (!token) return res.status(401).json({ error: "Sem token" });
 
-  // A sua verificação de token permanece
-  // --- CORREÇÃO: Leitura e conversão segura para Number ---
-  const { type } = req.body;
-  
-  // Usa Number() em vez de parseInt() para maior robustez e garante 0 se for nulo
-  const days = Number(req.body.days) || 0;
-  const hours = Number(req.body.hours) || 0;
-  // O campo 'minutes' é ignorado aqui, pois é hardcoded como 0 no frontend
+  // Pega os valores brutos para debug
+  const rawDays = req.body.days;
+  const rawHours = req.body.hours;
+  const rawType = req.body.type;
+
+  // Força a conversão
+  const days = Number(rawDays) || 0;
+  const hours = Number(rawHours) || 0;
+  const minutes = 0; // Hardcoded conforme seu dashboard
 
   const key = Math.random().toString(36).substring(2, 12).toUpperCase();
+  let expiresAt = 0;
 
-  let expiresAt = 0; // Padrão: Keys VIP (Permanente)
+  // Cálculo explícito com logs
+  const msDay = days * 86400000;
+  const msHour = hours * 3600000;
+  const totalMs = msDay + msHour;
 
-  // Lógica de cálculo de tempo
-  if (type === "temp") {
-    const totalMs =
-      (days * 86400000) + // Milissegundos em um dia
-      (hours * 3600000);  // Milissegundos em uma hora
-
-    if (totalMs > 0) {
+  if (rawType === "temp") {
+      if (totalMs > 0) {
         expiresAt = Date.now() + totalMs;
-    }
+      } else {
+        // FALLBACK DE SEGURANÇA:
+        // Se for temp e der 0 (erro), força 1 dia para testar se o cálculo é o problema
+        // expiresAt = Date.now() + 86400000; 
+      }
   }
-    
+
   const obj = {
     key,
-    type,
-    // Converte para string para garantir que o Redis salve corretamente
-    expiresAt: String(expiresAt), 
+    type: rawType || "unknown",
+    expiresAt: String(expiresAt),
     uses: 0,
     executor: "-",
     usedByIP: "-",
@@ -46,10 +58,16 @@ export default async function handler(req, res) {
     currentSessionHWID: "-", 
     ownerId: "",
     ownerName: "",
-    ownerAvatar: ""
+    ownerAvatar: "",
+    
+    // --- CAMPOS DE DIAGNÓSTICO (DEBUG) ---
+    // Isso vai mostrar na sua database o que o servidor recebeu
+    debug_received_days: String(rawDays),
+    debug_received_hours: String(rawHours),
+    debug_calculated_ms: String(totalMs),
+    debug_server_time: String(Date.now())
   };
 
-  // Correção robusta do hset
   const fieldsAndValues = Object.entries(obj).flat();
   await redis.hset(`key:${key}`, ...fieldsAndValues);
 
