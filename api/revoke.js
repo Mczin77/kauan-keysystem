@@ -7,25 +7,19 @@ export default async function handler(req, res) {
   const token = req.headers["x-panel-token"];
   if (!token) return res.status(401).json({ error: "Sem token" });
 
-  // valida token simples (não é super seguro, mas funciona pra painel)
-  if (!token.includes(":")) return res.status(401).json({ error: "Token inválido" });
-  
-  // Recebe a key e o estado desejado (true para bloquear, false para desbloquear)
+  // { key: 'XXX', state: true/false }
   const { key, state } = req.body; 
-
-  if (!key || state === undefined) {
-    return res.status(400).json({ ok: false, error: "Key and state are required." });
-  }
+  if (!key || state === undefined) 
+    return res.status(400).json({ ok: false, error: "Campos faltando" });
 
   const data = await redis.hgetall(`key:${key}`);
-  if (!data.key) return res.json({ ok: false, error: "Invalid key" });
+  if (!data.key) 
+    return res.status(404).json({ ok: false, error: "Key não encontrada" });
 
-  // Converte o estado para string "true" ou "false" (o Redis salva tudo como string)
-  const newState = state === true || state === "true" ? "true" : "false";
+  const revokedStatus = state ? "true" : "false";
 
-  await redis.hset(`key:${key}`, {
-    revoked: newState
-  });
+  // Atualiza apenas o campo 'revoked'
+  await redis.hset(`key:${key}`, { revoked: revokedStatus });
 
-  return res.json({ ok: true, message: `Key ${key} has been set to revoked: ${newState}` });
+  return res.json({ ok: true });
 }
