@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (!token) return res.status(401).json({ error: "Sem token" });
 
   // valida token simples (não é super seguro, mas funciona pra painel)
-  // if (!token.includes(":")) return res.status(401).json({ error: "Token inválido" });
+  if (!token.includes(":")) return res.status(401).json({ error: "Token inválido" });
 
   const { type, days, hours, minutes } = req.body;
 
@@ -31,7 +31,10 @@ export default async function handler(req, res) {
     expiresAt,
     uses: 0,
     executor: "-",
-    usedByIP: "-"
+    usedByIP: "-",
+    hwid: "-",        // NOVO: Inicializa o campo HWID
+    revoked: "false", // NOVO: Inicializa o flag de revogação
+    lastUsedAt: 0     // NOVO: Inicializa o timestamp de último uso
   };
 
   await redis.hset(`key:${key}`, obj);
