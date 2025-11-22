@@ -10,7 +10,6 @@ export default async function handler(req, res) {
   // valida token simples (não é super seguro, mas funciona pra painel)
   if (!token.includes(":")) return res.status(401).json({ error: "Token inválido" });
 
-  // REMOVEMOS maxUses
   const { type, days, hours, minutes } = req.body; 
 
   const key = Math.random().toString(36).substring(2, 12).toUpperCase();
@@ -33,12 +32,16 @@ export default async function handler(req, res) {
     uses: 0,
     executor: "-",
     usedByIP: "-",
+    // CAMPOS NOVOS/NECESSÁRIOS (Mesmo que vazios)
     hwid: "-",
-    revoked: "false",
+    revoked: "false", // ESSENCIAL para a revogação
     lastUsedAt: 0,
-    // NOVO: Campos de Controle de Sessão
     sessionExpiresAt: 0, 
     currentSessionHWID: "-", 
+    // Campos Discord (para o painel não quebrar)
+    ownerId: "",
+    ownerName: "",
+    ownerAvatar: ""
   };
 
   await redis.hset(`key:${key}`, obj);
