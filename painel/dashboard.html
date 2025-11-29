@@ -6,35 +6,107 @@
 <title>Painel Administrativo - Mczin</title>
 
 <style>
-    /* ESTILOS GERAIS */
-    body { display: none; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: #e0e0e0; height: 100vh; }
-    .sidebar { width: 250px; background: #141414; padding: 20px; border-right: 1px solid #333; display: flex; flex-direction: column; justify-content: space-between; }
-    .sidebar h2 { text-align: center; color: #00aaff; margin-bottom: 30px; font-size: 22px; }
-    .sidebar button { width: 100%; padding: 12px; margin-top: 10px; background: transparent; border: 1px solid #333; border-radius: 6px; color: #ccc; cursor: pointer; transition: 0.2s; font-size: 15px; text-align: left; padding-left: 20px; }
-    .sidebar button:hover { background: #1f1f1f; border-color: #00aaff; color: #00aaff; }
-    .main { flex: 1; padding: 40px; overflow-y: auto; }
-    .card { background: #1a1a1a; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 20px; }
-    .card h3 { margin-top: 0; color: #00aaff; border-bottom: 1px solid #333; padding-bottom: 15px; }
+    /* --- ESTILOS GERAIS --- */
+    body {
+        display: none; /* Esconde até validar */
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #0f0f0f;
+        color: #e0e0e0;
+        height: 100vh;
+    }
+
+    /* MENU LATERAL */
+    .sidebar {
+        width: 250px;
+        background: #141414;
+        padding: 20px;
+        border-right: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .sidebar h2 {
+        text-align: center;
+        color: #00aaff;
+        margin-bottom: 30px;
+        font-size: 22px;
+    }
+
+    .sidebar button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        background: transparent;
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #ccc;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 15px;
+        text-align: left;
+        padding-left: 20px;
+    }
+
+    .sidebar button:hover {
+        background: #1f1f1f;
+        border-color: #00aaff;
+        color: #00aaff;
+    }
     
-    /* FORMULÁRIOS E TABELAS */
+    .sidebar button.active-btn {
+        background: #1f1f1f;
+        border-color: #00aaff;
+        color: #00aaff;
+    }
+
+    /* ÁREA PRINCIPAL */
+    .main {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+    }
+
+    .card {
+        background: #1a1a1a;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        margin-bottom: 20px;
+    }
+
+    .card h3 {
+        margin-top: 0;
+        color: #00aaff;
+        border-bottom: 1px solid #333;
+        padding-bottom: 15px;
+    }
+
+    /* FORMULÁRIOS */
     .form-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; flex-wrap: wrap; }
     .input-group { display: flex; flex-direction: column; flex: 1; }
     .input-group label { font-size: 12px; margin-bottom: 5px; color: #888; }
-    input, select { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; outline: none; width: 100%; box-sizing: border-box; }
-    input:focus, select:focus { border-color: #00aaff; }
+    input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; outline: none; width: 100%; box-sizing: border-box; font-family: inherit;}
+    input:focus, select:focus, textarea:focus { border-color: #00aaff; }
+    
     .btn-primary { background: #00aaff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; white-space: nowrap; }
     .btn-primary:hover { background: #0088cc; }
+
+    /* TABELAS */
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
     th { text-align: left; padding: 12px; background: #252525; color: #aaa; font-weight: normal; }
     td { padding: 12px; border-bottom: 1px solid #2a2a2a; vertical-align: middle; }
     tr:hover td { background: #202020; }
     
-    /* TAGS */
+    /* STATUS E TAGS */
     .tag-vip { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
     .tag-time { background: #00aaff; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
     .tag-revoked { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
     .tag-active { background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
     .tag-session { background: #2ecc71; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; animation: pulse 2s infinite; }
+
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
     /* BOTÕES DE AÇÃO */
@@ -43,42 +115,69 @@
     .btn-revoke { background: #e74c3c; } .btn-revoke:hover { background: #c0392b; }
     .btn-unrevoke { background: #2ecc71; } .btn-unrevoke:hover { background: #27ae60; }
     .btn-reset { background: #f39c12; color: black; } .btn-reset:hover { background: #d35400; color: white; }
-    .btn-notify { background: #9b59b6; color: white; } .btn-notify:hover { background: #8e44ad; } /* NOVO BOTÃO ROXO */
+    .btn-notify { background: #9b59b6; color: white; } .btn-notify:hover { background: #8e44ad; }
 
-    .discord-box { display: flex; align-items: center; gap: 15px; background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-top: 20px; }
+    /* SYSTEM CARDS */
+    .sys-card { flex:1; background:#222; padding:20px; border-radius:8px; border:1px solid #333; display:flex; flex-direction:column; justify-content:space-between; }
+    .sys-card h4 { margin-top:0; color:white; font-size:16px; }
+    .sys-card p { color:#888; font-size:13px; height:40px; }
+
+    .discord-box { display: flex; align-items: center; gap: 15px; background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-top: 20px; animation: fadeIn 0.5s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
 </style>
 </head>
 <body>
 
 <script>
+// --- PROTEÇÃO DE ROTA ---
 (async function protectRoute() {
     const token = localStorage.getItem("panel_token");
     if (!token) { window.location.href = "/"; return; }
+
     try {
         const res = await fetch("/api/check", { headers: { "x-panel-token": token } });
         const data = await res.json();
-        if (data.ok) { document.body.style.display = "flex"; loadKeys(); } 
-        else { localStorage.removeItem("panel_token"); window.location.href = "/"; }
+        if (data.ok) {
+            document.body.style.display = "flex";
+            loadKeys(); // Carrega a home por padrão
+        } else {
+            localStorage.removeItem("panel_token");
+            window.location.href = "/";
+        }
     } catch (e) { window.location.href = "/"; }
 })();
 </script>
 
 <div class="sidebar">
     <div>
-        <h2>⚡ Mczin Painel</h2>
+        <h2>⚡ Painel</h2>
         <button onclick="loadHome()">🏠 Início</button>
         <button onclick="loadKeys()">🔑 Gerenciar Keys</button>
         <button onclick="loadUsers()">👤 Usuários & Discord</button>
+        <button onclick="loadSystem()" style="border-color: #ff9800; color: #ff9800;">📢 Sistema</button>
     </div>
     <button onclick="logout()" style="border-color:#ff4d4d; color:#ff4d4d;">🚪 Sair</button>
 </div>
 
-<div class="main" id="content"></div>
+<div class="main" id="content">
+</div>
 
 <script>
-const token = localStorage.getItem("panel_token"); 
+// --- VARIÁVEIS E FUNÇÕES GERAIS ---
+// ###############################################
+const TOKEN_PADRAO = "SEU_TOKEN_AQUI"; // <--- COLOQUE SEU TOKEN AQUI SE QUISER SALVAR
+// ###############################################
+
+let token = localStorage.getItem("panel_token"); 
+if(!token && TOKEN_PADRAO !== "SEU_TOKEN_AQUI") {
+    token = TOKEN_PADRAO;
+    localStorage.setItem("panel_token", TOKEN_PADRAO);
+}
+
+let foundUser = null; 
+
 function logout() { localStorage.removeItem("panel_token"); window.location.href = "/"; }
-let foundUser = null;
 
 function formatTime(timestamp) {
     if (timestamp === 0 || timestamp === "0") return '∞ Permanente';
@@ -94,24 +193,119 @@ function loadHome() {
     document.getElementById("content").innerHTML = `<div class="card"><h3>Bem-vindo ao painel 🎉</h3><p>Selecione uma opção no menu lateral.</p></div>`;
 }
 
+// --- SISTEMA GLOBAL (NOVO) ---
+
+async function loadSystem() {
+    const contentDiv = document.getElementById("content");
+    contentDiv.innerHTML = '<div class="card"><h3>Carregando sistema...</h3></div>';
+
+    try {
+        const res = await fetch("/api/global"); // Chama o novo endpoint
+        const data = await res.json();
+        const config = data.config || {};
+
+        const isMaint = config.maintenance === "true";
+        const isShutdown = config.shutdown === "true";
+        const currentMsg = config.message || "";
+
+        contentDiv.innerHTML = `
+            <div class="card" style="border: 1px solid #ff9800;">
+                <h3 style="color:#ff9800;">📢 Controle Global do Script</h3>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="color:white; font-weight:bold;">Mensagem Global / Motivo:</label>
+                    <textarea id="globalMessage" rows="3" placeholder="Escreva um aviso para todos os usuários...">${currentMsg}</textarea>
+                </div>
+
+                <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                    
+                    <div class="sys-card">
+                        <div>
+                            <h4>🛠️ Modo Manutenção</h4>
+                            <p>Impede <strong>novos logins</strong>. Quem já está jogando continua até a revalidação.</p>
+                        </div>
+                        <button id="btnMaint" onclick="toggleSystem('maintenance')" class="btn-primary" style="width:100%; background:${isMaint ? '#e74c3c' : '#444'}">
+                            ${isMaint ? 'DESATIVAR Manutenção' : 'ATIVAR Manutenção'}
+                        </button>
+                    </div>
+
+                    <div class="sys-card">
+                        <div>
+                            <h4>💀 Shutdown (Derrubar)</h4>
+                            <p>Fecha o script de <strong>TODOS</strong> os usuários online imediatamente (Kick).</p>
+                        </div>
+                        <button id="btnShut" onclick="toggleSystem('shutdown')" class="btn-primary" style="width:100%; background:${isShutdown ? '#e74c3c' : '#444'}">
+                            ${isShutdown ? 'CANCELAR Shutdown' : 'EXECUTAR Shutdown'}
+                        </button>
+                    </div>
+
+                    <div class="sys-card">
+                        <div>
+                            <h4>📨 Enviar Aviso</h4>
+                            <p>Apenas envia a mensagem acima para todos online sem bloquear nada.</p>
+                        </div>
+                        <button onclick="toggleSystem('message')" class="btn-primary" style="width:100%; background:#f39c12; color:black;">
+                            Atualizar / Enviar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro ao carregar sistema.</h3><p>${e.message}</p></div>`;
+    }
+}
+
+async function toggleSystem(action) {
+    const msg = document.getElementById("globalMessage").value;
+    
+    // Pega estado atual visualmente
+    const btnMaint = document.getElementById("btnMaint");
+    const btnShut = document.getElementById("btnShut");
+    
+    let maintenance = btnMaint.innerText.includes("DESATIVAR");
+    let shutdown = btnShut.innerText.includes("CANCELAR");
+
+    if (action === 'maintenance') maintenance = !maintenance;
+    if (action === 'shutdown') shutdown = !shutdown;
+    
+    if (action === 'shutdown' && shutdown && !confirm("ATENÇÃO: Isso vai fechar o script de TODOS os usuários online. Tem certeza?")) return;
+
+    try {
+        const res = await fetch("/api/global", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-panel-token": token },
+            body: JSON.stringify({ maintenance, shutdown, message: msg })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            alert("Configuração Global Atualizada!");
+            loadSystem(); 
+        } else {
+            alert("Erro: " + data.error);
+        }
+    } catch (e) { alert("Erro de rede."); }
+}
+
+
 // --- AÇÕES DO DISCORD NOTIFY ---
 
 async function notifyUser(key, ownerName) {
-    // Pergunta simples usando prompt do navegador
     const choice = prompt(
         `Enviar mensagem para ${ownerName}?\n\n` +
         `Digite 'tempo' para enviar o tempo restante.\n` +
-        `OU digite qualquer outra frase para enviar como mensagem personalizada.`
+        `OU digite qualquer outra frase para enviar como mensagem.`
     );
 
-    if (!choice) return; // Cancelou ou vazio
+    if (!choice) return;
 
     let messageType = "custom";
     let customMessage = choice;
 
     if (choice.toLowerCase() === "tempo") {
         messageType = "time";
-        customMessage = ""; // O backend calcula
+        customMessage = ""; 
     }
 
     try {
@@ -122,9 +316,9 @@ async function notifyUser(key, ownerName) {
         });
         const data = await response.json();
 
-        if (data.ok) { alert(`✅ Mensagem enviada para ${ownerName}!`); } 
+        if (data.ok) { alert(`✅ Mensagem enviada!`); } 
         else { alert(`❌ Erro: ${data.error}`); }
-    } catch (e) { alert('Erro de conexão ao enviar mensagem.'); }
+    } catch (e) { alert('Erro de conexão.'); }
 }
 
 // --- GERENCIAMENTO DE KEYS ---
@@ -243,7 +437,7 @@ async function loadKeys() {
     } catch (e) { tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">${e.message}</td></tr>`; }
 }
 
-// --- LÓGICA USUÁRIOS (COM BOTÃO NOTIFY) ---
+// --- LÓGICA USUÁRIOS ---
 
 async function loadUsers() {
     const contentDiv = document.getElementById("content");
@@ -320,20 +514,17 @@ function renderLinkedUsers(keys) {
     if (linkedKeys.length === 0) { tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:20px;'>Vazio</td></tr>"; return; }
     let html = "";
     linkedKeys.forEach(k => {
-        // NOVO: BOTÃO NOTIFY ROXO
         html += `<tr>
                 <td><img src="${k.ownerAvatar}" style="width:40px; height:40px; border-radius:50%; border:1px solid #555;"></td>
                 <td style="font-weight:bold; color:#fff;">${k.ownerName}</td>
                 <td style="font-family:monospace; color:#00aaff;">${k.key}</td>
                 <td>
-                    <button class="btn-action btn-notify" onclick="notifyUser('${k.key}', '${k.ownerName}')">📩 Enviar DM</button>
-                    <button class="btn-action btn-delete" onclick="alert('Para desvincular, delete a key ou crie função de limpar.')">Desvincular</button>
+                    <button class="btn-action btn-notify" onclick="notifyUser('${k.key}', '${k.ownerName}')">📩 DM</button>
                 </td>
             </tr>`;
     });
     tbody.innerHTML = html;
 }
-
 </script>
 </body>
 </html>
