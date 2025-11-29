@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 
   const timeRemaining = Number(data.expiresAt) > 0 ? Number(data.expiresAt) - Date.now() : -1;
   
-  // Retorna sucesso E a mensagem global (se houver)
+  // Retorna sucesso E a mensagem global (se houver
   return res.json({ 
       ok: true, 
       expiresAt: timeRemaining,
