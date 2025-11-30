@@ -6,22 +6,32 @@
 <title>Painel Administrativo - Key System</title>
 
 <style>
-    /* SEGURANÇA VISUAL: O corpo começa invisível */
+    /* CORREÇÃO: O corpo agora tem o fundo escuro e está sempre visível */
     body {
-        display: none; /* Esconde tudo até verificar o login */
         margin: 0;
         padding: 0;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #0f0f0f;
+        background: #0f0f0f; /* Fundo escuro garantido */
         color: #e0e0e0;
         height: 100vh;
         overflow: hidden;
-        /* flex será adicionado via JS se o login for ok */
+        display: block; /* Garante que o body em si é visível */
     }
 
-    /* LAYOUT PRINCIPAL */
+    /* LAYOUT PRINCIPAL - Inicialmente escondido */
+    .sidebar, .main-content {
+        display: none;
+    }
+
+    /* LAYOUT PRINCIPAL - Exibido apenas se estiver logado */
     body.logged-in {
+        display: flex; /* Ativa o layout principal (sidebar + content) */
+    }
+    body.logged-in .sidebar {
         display: flex;
+    }
+    body.logged-in .main-content {
+        display: block;
     }
 
     /* MENU LATERAL */
@@ -30,7 +40,6 @@
         background: #141414;
         padding: 20px;
         border-right: 1px solid #333;
-        display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
