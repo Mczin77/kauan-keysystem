@@ -3,629 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Administrativo - Mczin</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'primary': '#00aaff',
-                    'bg-dark': '#0f0f0f',
-                    'card-dark': '#141414',
-                    'input-dark': '#2a2a2a',
-                }
-            }
-        }
-    }
-</script>
+<title>Painel 🔵 PP Xits 〽️</title>
 
 <style>
-    /* --- ESTILOS GERAIS --- */
     body {
-        display: none; /* Esconde até validar */
-        margin: 0;
-        padding: 0;
-        font-family: 'Inter', sans-serif;
+        font-family: Arial, sans-serif;
         background: #0f0f0f;
-        color: #e0e0e0;
-        height: 100vh;
-        overflow-y: hidden;
-    }
-
-    /* MENU LATERAL */
-    .sidebar {
-        width: 250px;
-        background: #141414;
-        padding: 20px;
-        border-right: 1px solid #333;
+        color: white;
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 100vh;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
 
-    .sidebar h2 {
+    .login-box {
+        background: #1a1a1a;
+        padding: 30px;
+        width: 320px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #000;
+    }
+
+    h2 {
         text-align: center;
+        margin-bottom: 20px;
         color: #00aaff;
-        margin-bottom: 30px;
-        font-size: 22px;
-        font-weight: 700;
     }
 
-    .sidebar button {
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+        background: #2a2a2a;
+        color: white;
+        font-size: 15px;
+    }
+
+    button {
         width: 100%;
         padding: 12px;
         margin-top: 10px;
-        background: transparent;
-        border: 1px solid #333;
-        border-radius: 8px;
-        color: #ccc;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .sidebar button:hover {
-        background: #00aaff30;
-        border-color: #00aaff;
-        color: #fff;
-    }
-
-    .sidebar button.active {
         background: #00aaff;
-        border-color: #00aaff;
-        color: #fff;
-        box-shadow: 0 4px 10px rgba(0, 170, 255, 0.3);
-        font-weight: 600;
-    }
-
-    /* CONTEÚDO PRINCIPAL */
-    .main-content {
-        flex-grow: 1;
-        padding: 30px;
-        overflow-y: auto;
-    }
-
-    .content-section {
-        background: #1e1e1e;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    }
-
-    input[type="text"], select, textarea {
-        padding: 10px;
-        border: 1px solid #333;
+        border: none;
         border-radius: 6px;
-        background: #2a2a2a;
-        color: #fff;
-        transition: border-color 0.2s;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    input[type="text"]:focus, select:focus, textarea:focus {
-        border-color: #00aaff;
-        outline: none;
-        box-shadow: 0 0 0 1px #00aaff;
-    }
-
-    .search-btn, .assign-btn {
-        background: #00aaff;
-        color: #fff;
-        padding: 10px 15px;
-        border-radius: 6px;
-        font-weight: 600;
+        color: white;
+        font-size: 16px;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: 0.2s;
     }
 
-    .search-btn:hover, .assign-btn:hover {
+    button:hover {
         background: #0088cc;
     }
 
-    /* Tabela de Usuários */
-    #usersTable th {
-        background-color: #2a2a2a !important;
-        color: #00aaff;
-        font-weight: 700;
-    }
-    #usersTable td {
-        padding: 12px 24px;
-        border-bottom: 1px solid #333;
-        vertical-align: middle;
-    }
-    #usersTable tr:last-child td {
-        border-bottom: none;
-    }
-    #usersTable tr:hover {
-        background-color: #1a1a1a;
-    }
-
-    /* Botões de Ação na Tabela */
-    .action-btn {
-        padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: opacity 0.2s;
-    }
-    .action-btn:hover {
-        opacity: 0.8;
-    }
-    .unlink-btn {
-        background: #ff4444;
-        color: #fff;
-        border: none;
-    }
-    .notify-btn {
-        background: #333333;
-        color: #00aaff;
-        border: 1px solid #00aaff;
-        margin-left: 8px;
+    #msg {
+        margin-top: 15px;
+        text-align: center;
+        color: #ff4d4d;
+        font-size: 14px;
+        display: none;
     }
 </style>
+
 </head>
-<body class="flex" style="display: flex !important;">
+<body>
 
-    <!-- MENU LATERAL -->
-    <div class="sidebar">
-        <div>
-            <h2>PAINEL KEY SYSTEM</h2>
-            <button id="btnHome" class="active" onclick="showSection('home', 'btnHome')">Visão Geral</button>
-            <button id="btnManage" onclick="showSection('manageUsers', 'btnManage'); loadUsers();">Gerenciar Usuários</button>
-            <button id="btnKeys" onclick="showSection('keyManagement', 'btnKeys')">Gerenciar Chaves (WIP)</button>
-        </div>
-        <div class="mt-4">
-            <p class="text-xs text-gray-500 mb-2">Token de Acesso:</p>
-            <p id="tokenDisplay" class="text-sm font-mono break-all text-primary">...</p>
-        </div>
-    </div>
+<div class="login-box">
+    <h2>Login do Painel</h2>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <div class="main-content">
-        <!-- SEÇÃO 1: VISÃO GERAL -->
-        <div id="home" class="content-section">
-            <h1 class="text-3xl font-bold text-primary mb-6">Bem-vindo(a) ao Painel Admin</h1>
-            <p class="mb-4">Use a barra lateral para navegar entre as funções de gerenciamento.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-lg">
-                    <h4 class="text-xl font-semibold text-primary">Chaves Ativas</h4>
-                    <p class="text-4xl mt-2 font-bold" id="totalKeys">0</p>
-                </div>
-                <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-lg">
-                    <h4 class="text-xl font-semibold text-primary">Usuários Vinculados</h4>
-                    <p class="text-4xl mt-2 font-bold" id="linkedUsers">0</p>
-                </div>
-                <div class="bg-[#2a2a2a] p-6 rounded-lg shadow-lg">
-                    <h4 class="text-xl font-semibold text-primary">Online Agora (WIP)</h4>
-                    <p class="text-4xl mt-2 font-bold">--</p>
-                </div>
-            </div>
-        </div>
+    <input id="user" type="text" placeholder="Usuário">
+    <input id="pass" type="password" placeholder="Senha">
 
-        <!-- SEÇÃO 2: GERENCIAR USUÁRIOS -->
-        <div id="manageUsers" class="content-section" style="display:none;">
-            <h1 class="text-3xl font-bold text-primary mb-8">Gerenciar Usuários (Vincular/Desvincular)</h1>
+    <button onclick="login()">Entrar</button>
 
-            <!-- VINCULAR USUÁRIO -->
-            <div class="mb-8 p-6 bg-[#2a2a2a] rounded-lg shadow-inner">
-                <h3 class="text-xl font-bold mb-4 text-primary">Vincular Key a Usuário Discord</h3>
-                <div class="flex flex-col md:flex-row gap-4 mb-4 items-end">
-                    <div class="w-full md:w-1/3">
-                        <label class="block text-sm font-medium mb-1">Key Disponível</label>
-                        <select id="keySelect" class="w-full"></select>
-                    </div>
-                    <div class="w-full md:w-1/3">
-                        <label class="block text-sm font-medium mb-1">ID Discord do Usuário</label>
-                        <input type="text" id="discordIdInput" placeholder="Ex: 123456789012345678">
-                    </div>
-                    <div class="w-full md:w-1/3 flex items-center space-x-2">
-                        <button class="search-btn flex-grow" onclick="searchUser()">Buscar</button>
-                        <button class="assign-btn flex-grow" onclick="assignKey()">Vincular</button>
-                    </div>
-                </div>
-
-                <!-- Resultado da Busca -->
-                <div id="searchResult" class="p-4 bg-[#141414] rounded-md border border-gray-700 hidden items-center space-x-4 mt-4">
-                    <img id="userAvatar" class="w-10 h-10 rounded-full border-2 border-primary" src="" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-                    <div>
-                        <p class="font-bold text-white" id="userName"></p>
-                        <p class="text-sm text-gray-400" id="userId"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- USUÁRIOS VINCULADOS -->
-            <h3 class="text-xl font-bold mb-4 text-primary">Usuários Vinculados</h3>
-            <div class="shadow-lg rounded-lg overflow-x-auto" style="max-height: 500px; overflow-y: auto;">
-                <table class="w-full text-sm text-left text-gray-500" id="usersTable">
-                    <thead class="text-xs uppercase bg-gray-700 text-gray-400 sticky top-0">
-                        <tr>
-                            <th scope="col" class="px-6 py-3">Avatar</th>
-                            <th scope="col" class="px-6 py-3">Nome do Dono</th>
-                            <th scope="col" class="px-6 py-3">Key</th>
-                            <th scope="col" class="px-6 py-3">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Conteúdo gerado pelo JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- SEÇÃO 3: GERENCIAR CHAVES -->
-        <div id="keyManagement" class="content-section" style="display:none;">
-            <h1 class="text-3xl font-bold text-primary mb-6">Gerenciar Chaves (WIP)</h1>
-            <p class="text-white">Essa seção está em desenvolvimento.</p>
-        </div>
-    </div>
-    
-    <!-- MODAL DE NOTIFICAÇÃO -->
-    <div id="notifyModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
-        <div class="bg-[#1e1e1e] p-6 rounded-lg shadow-2xl w-full max-w-lg">
-            <h4 class="text-lg font-bold mb-4 text-[#00aaff]">Enviar Notificação</h4>
-            <p id="notifyUserMessage" class="mb-4 text-white font-semibold"></p>
-            
-            <div class="space-y-4">
-                <label class="block text-sm font-medium">Tipo de Mensagem</label>
-                <select id="messageTypeSelect" onchange="toggleCustomMessageInput()" class="w-full">
-                    <option value="time">Key Expira em Breve (Padrão)</option>
-                    <option value="ban">Key Bloqueada (Padrão)</option>
-                    <option value="custom">Mensagem Personalizada</option>
-                </select>
-
-                <div id="customMessageContainer" class="hidden">
-                    <label class="block text-sm font-medium mb-1">Mensagem Personalizada (Markdown suportado)</label>
-                    <textarea id="customMessageInput" rows="4" placeholder="Digite sua mensagem aqui..." class="w-full p-2 border border-gray-600 rounded-md bg-[#2a2a2a] text-white"></textarea>
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-3 mt-6">
-                <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition duration-200" onclick="closeModal('notifyModal')">Cancelar</button>
-                <button id="sendNotifyBtn" class="px-4 py-2 bg-[#00aaff] hover:bg-sky-600 text-white rounded-md font-bold transition duration-200">Enviar para Usuário</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL CUSTOMIZADO (SUBSTITUINDO ALERT E CONFIRM) -->
-    <div id="customModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
-        <div class="bg-[#1e1e1e] p-6 rounded-lg shadow-2xl w-full max-w-sm">
-            <h4 id="modalTitle" class="text-lg font-bold mb-4 text-primary"></h4>
-            <p id="modalMessage" class="mb-6 text-white"></p>
-            <div class="flex justify-end space-x-3">
-                <button id="modalCancelBtn" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition duration-200">Cancelar</button>
-                <button id="modalConfirmBtn" class="px-4 py-2 bg-primary hover:bg-sky-600 text-white rounded-md font-bold transition duration-200">Confirmar</button>
-            </div>
-        </div>
-    </div>
+    <div id="msg">Usuário ou senha incorretos</div>
+</div>
 
 
 <script>
-    // --- Variáveis Globais ---
-    // Endpoint unificado para busca de usuário Discord e Notificações
-    const DISCORD_API_ENDPOINT = "/api/discordApiCombined";
-    // Outros endpoints
-    const KEY_API_ENDPOINT = "/api/keys";
-    const ASSIGN_API_ENDPOINT = "/api/assign";
-    const UNLINK_API_ENDPOINT = "/api/unlink"; 
+async function login() {
+    const user = document.getElementById("user").value.trim();
+    const pass = document.getElementById("pass").value.trim();
+    const msg  = document.getElementById("msg");
 
-    let token = localStorage.getItem('panel-token') || "demo-token";
-    let foundUser = null; 
-    let notifyKey = null; 
-    let allKeys = []; 
+    msg.style.display = "none";
 
-    // --- Funções de Modal Customizado ---
-    function showMessage(title, message) {
-        const modal = document.getElementById("customModal");
-        document.getElementById("modalTitle").textContent = title;
-        document.getElementById("modalMessage").innerHTML = message;
-        document.getElementById("modalCancelBtn").style.display = 'none';
-        document.getElementById("modalConfirmBtn").textContent = "OK";
-        document.getElementById("modalConfirmBtn").onclick = () => modal.classList.add("hidden");
-        modal.classList.remove("hidden");
+    if (!user || !pass) {
+        msg.innerText = "Preencha todos os campos";
+        msg.style.display = "block";
+        return;
     }
 
-    function showConfirmation(title, message, onConfirm) {
-        const modal = document.getElementById("customModal");
-        document.getElementById("modalTitle").textContent = title;
-        document.getElementById("modalMessage").innerHTML = message;
-        document.getElementById("modalCancelBtn").style.display = 'inline-block';
-        document.getElementById("modalConfirmBtn").textContent = "Confirmar";
-        document.getElementById("modalConfirmBtn").onclick = () => {
-            modal.classList.add("hidden");
-            onConfirm();
-        };
-        document.getElementById("modalCancelBtn").onclick = () => modal.classList.add("hidden");
-        modal.classList.remove("hidden");
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add("hidden");
-    }
-
-    // --- Funções de Navegação ---
-
-    function showSection(sectionId, buttonId) {
-        // Esconde todas as seções
-        document.querySelectorAll('.content-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        // Remove 'active' de todos os botões
-        document.querySelectorAll('.sidebar button').forEach(button => {
-            button.classList.remove('active');
+    try {
+        const response = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user, pass }),
         });
 
-        // Mostra a seção desejada e ativa o botão
-        document.getElementById(sectionId).style.display = 'block';
-        document.getElementById(buttonId).classList.add('active');
-    }
+        const data = await response.json();
 
-    // --- Funções de Dados ---
-
-    // Carrega todas as keys e atualiza o dashboard
-    async function loadUsers() {
-        if (!token) return;
-
-        try {
-            // Usa o endpoint KEY_API_ENDPOINT
-            const res = await fetch(KEY_API_ENDPOINT, { headers: { "x-panel-token": token } });
-            const data = await res.json();
-
-            if (data.ok) {
-                allKeys = data.keys;
-                console.log("Keys carregadas do backend:", allKeys);
-
-                renderKeySelect(allKeys);
-                renderLinkedUsers(allKeys);
-                
-                // Atualizar dados de visão geral
-                document.getElementById('totalKeys').textContent = allKeys.length;
-                const linkedCount = allKeys.filter(k => k.ownerId).length;
-                document.getElementById('linkedUsers').textContent = linkedCount;
-
-            } else {
-                showMessage("Erro de Carga", "Falha ao carregar a lista de keys.");
-            }
-        } catch (e) {
-            showMessage("Erro de Rede", "Não foi possível conectar ao servidor para carregar as keys.");
-            console.error("Erro ao carregar keys:", e);
-        }
-    }
-
-    function renderKeySelect(keys) {
-        const keySelect = document.getElementById("keySelect");
-        // Filtra apenas chaves que AINDA NÃO têm um dono (ownerId)
-        const availableKeys = keys.filter(k => !k.ownerId);
-
-        let html = '<option value="">-- Selecione a Key --</option>';
-        availableKeys.forEach(k => {
-            html += `<option value="${k.key}">${k.key}</option>`;
-        });
-        keySelect.innerHTML = html;
-    }
-
-    function renderLinkedUsers(keys) {
-        const tbody = document.getElementById("usersTableBody");
-        console.log("Keys recebidas para renderização:", keys);
-
-        // Filtra apenas chaves que POSSUEM um dono (ownerId)
-        const linkedKeys = keys.filter(k => k.ownerId);
-        console.log("Keys vinculadas (com ownerId):", linkedKeys);
-
-        if (linkedKeys.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='4' class='text-center' style='padding:20px; color:#ff4444; font-weight:bold;'>Nenhuma key vinculada. Use a seção acima para vincular uma key.</td></tr>";
-            return;
-        }
-
-        let html = "";
-        linkedKeys.forEach(k => {
-            // Garante que a URL do avatar não seja undefined, senão o img quebra
-            const avatarUrl = k.ownerAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-            // A correção é aqui: garantir que os botões só apareçam se houver ownerId, o que já está garantido pelo filtro linkedKeys
-            html += `<tr>
-                <td><img src="${avatarUrl}" style="width:40px; height:40px; border-radius:50%; border:1px solid #555;"></td>
-                <td style="font-weight:bold; color:#fff;">${k.ownerName || 'Nome Desconhecido'}</td>
-                <td style="font-family:monospace; color:#00aaff;">${k.key}</td>
-                <td>
-                    <button class="action-btn unlink-btn" onclick="unlinkKey('${k.key}')">Desvincular</button>
-                    <button class="action-btn notify-btn" onclick="openNotifyModal('${k.key}', '${k.ownerName.replace(/'/g, "\\'")}')">Notificar</button>
-                </td>
-            </tr>`;
-        });
-        tbody.innerHTML = html;
-    }
-
-    // --- Funções de Ação ---
-
-    async function searchUser() {
-        const discordId = document.getElementById("discordIdInput").value.trim();
-        const resultDiv = document.getElementById("searchResult");
-        
-        if (!discordId) {
-            showMessage("Erro", "Por favor, insira o ID Discord.");
-            return;
-        }
-
-        // Limpa resultados anteriores
-        foundUser = null;
-        resultDiv.classList.add("hidden");
-        document.getElementById("userName").textContent = "Buscando...";
-
-        try {
-            // NOVO ENDPOINT: DISCORD_API_ENDPOINT com query parameter 'action=search'
-            const res = await fetch(`${DISCORD_API_ENDPOINT}?action=search&id=${discordId}`);
-            const data = await res.json();
-
-            if (data.ok) {
-                // A resposta deve ter a mesma estrutura de um usuário Discord
-                foundUser = data;
-                document.getElementById("userAvatar").src = data.avatar;
-                document.getElementById("userName").textContent = `${data.username} (${data.global_name || 'Sem nome global'})`;
-                document.getElementById("userId").textContent = `ID: ${data.id}`;
-                resultDiv.classList.remove("hidden");
-            } else {
-                showMessage("Erro de Busca", data.error || "Usuário não encontrado.");
-                document.getElementById("userName").textContent = "Usuário não encontrado";
-                document.getElementById("userId").textContent = "";
-                // Mantém a div de resultado visível para mostrar o erro
-                resultDiv.classList.remove("hidden"); 
-            }
-        } catch (e) {
-            showMessage("Erro de Rede", "Erro ao conectar com a API Discord.");
-            document.getElementById("userName").textContent = "Erro na Conexão";
-            document.getElementById("userId").textContent = "";
-            resultDiv.classList.remove("hidden");
-        }
-    }
-
-    function assignKey() {
-        const key = document.getElementById("keySelect").value;
-        if (!key || !foundUser) {
-            showMessage("Erro", "Selecione a key e certifique-se de ter buscado um usuário do Discord.");
-            return;
-        }
-        
-        showConfirmation("Confirmar Vinculação", 
-            `Deseja realmente vincular o usuário **${foundUser.username}** à key **${key}**?`, 
-            async () => {
-                try {
-                    // Endpoint ASSIGN_API_ENDPOINT permanece o mesmo
-                    const res = await fetch(ASSIGN_API_ENDPOINT, {
-                        method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-                        body: JSON.stringify({ 
-                            key: key, 
-                            discordId: foundUser.id, 
-                            discordName: foundUser.username, 
-                            discordAvatar: foundUser.avatar 
-                        })
-                    });
-                    const result = await res.json();
-                    if (result.ok) { 
-                        showMessage("Sucesso", "Key vinculada com sucesso!"); 
-                        loadUsers(); 
-                        document.getElementById("discordIdInput").value = '';
-                        document.getElementById("searchResult").classList.add("hidden");
-                        foundUser = null;
-                    } else { 
-                        showMessage("Erro", result.error || "Falha ao vincular a key."); 
-                    }
-                } catch (e) { 
-                    showMessage("Erro", "Erro de rede ao salvar a vinculação."); 
-                }
-            }
-        );
-    }
-
-    function unlinkKey(key) {
-        showConfirmation("Confirmar Desvinculação", 
-            `Deseja realmente desvincular a key **${key}**? O usuário perderá o acesso.`, 
-            async () => {
-                try {
-                    // Endpoint UNLINK_API_ENDPOINT permanece o mesmo
-                    const res = await fetch(UNLINK_API_ENDPOINT, {
-                        method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-                        body: JSON.stringify({ key: key })
-                    });
-                    const result = await res.json();
-                    if (result.ok) { 
-                        showMessage("Sucesso", "Key desvinculada com sucesso!"); 
-                        loadUsers(); 
-                    } else { 
-                        showMessage("Erro", result.error || "Falha ao desvincular a key."); 
-                    }
-                } catch (e) { 
-                    showMessage("Erro", "Erro de rede ao desvincular."); 
-                }
-            }
-        );
-    }
-
-    // --- Funções de Notificação ---
-
-    function openNotifyModal(key, ownerName) {
-        notifyKey = key;
-        // O replace() garante que aspas simples no nome não quebrem o onclick
-        document.getElementById("notifyUserMessage").textContent = `Key: ${key} | Usuário: ${ownerName}`;
-        document.getElementById("messageTypeSelect").value = "time";
-        document.getElementById("customMessageInput").value = "";
-        toggleCustomMessageInput(); // Reseta para o padrão (escondido)
-        document.getElementById("notifyModal").classList.remove("hidden");
-    }
-    
-    function toggleCustomMessageInput() {
-        const type = document.getElementById("messageTypeSelect").value;
-        const customContainer = document.getElementById("customMessageContainer");
-        if (type === "custom") {
-            customContainer.classList.remove("hidden");
+        if (data.ok) {
+            localStorage.setItem("panel_token", data.token);
+            window.location.href = "/painel/dashboard.html";  // caminho do painel
         } else {
-            customContainer.classList.add("hidden");
+            msg.innerText = "Usuário ou senha incorretos";
+            msg.style.display = "block";
         }
+
+    } catch (e) {
+        msg.innerText = "Erro ao conectar ao servidor";
+        msg.style.display = "block";
     }
-
-    async function sendNotification() {
-        if (!notifyKey) return showMessage("Erro", "Key não selecionada. Abra o modal novamente.");
-
-        const key = notifyKey;
-        const messageType = document.getElementById("messageTypeSelect").value;
-        const customMessage = document.getElementById("customMessageInput").value;
-
-        if (messageType === "custom" && customMessage.trim() === "") {
-            return showMessage("Erro", "A mensagem personalizada não pode estar vazia.");
-        }
-
-        try {
-            // NOVO ENDPOINT: DISCORD_API_ENDPOINT (usando POST)
-            const res = await fetch(DISCORD_API_ENDPOINT, {
-                method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-                body: JSON.stringify({ 
-                    action: "notify", // Adiciona a ação para o backend saber o que fazer
-                    key: key, 
-                    messageType: messageType, 
-                    customMessage: customMessage.trim()
-                })
-            });
-            
-            const result = await res.json(); 
-            if (result.ok) { 
-                showMessage("Sucesso", "Notificação enviada com sucesso!"); 
-                closeModal('notifyModal');
-            } else { 
-                showMessage("Erro", `Falha ao enviar notificação: ${result.error || 'Erro desconhecido'}`); 
-            }
-
-        } catch (e) {
-            showMessage("Erro", "Erro de rede ao enviar a notificação.");
-        }
-    }
-
-
-    // --- Inicialização ---
-
-    // Adiciona o listener ao botão de Notificar para o modal
-    document.getElementById("sendNotifyBtn").onclick = sendNotification;
-
-
-    window.onload = function() {
-        if (!token) {
-            document.body.innerHTML = '<p style="color:white; padding:20px;">Token não encontrado. Faça o login.</p>';
-            return;
-        }
-
-        document.getElementById("tokenDisplay").textContent = token;
-
-        // Inicia na seção Home
-        showSection('home', 'btnHome');
-        
-        // Carrega dados iniciais, que também atualiza a Visão Geral
-        loadUsers(); 
-
-        // Torna o corpo visível após a validação inicial
-        document.body.style.display = 'flex';
-    };
+}
 </script>
+
 </body>
 </html>
