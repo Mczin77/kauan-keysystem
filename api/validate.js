@@ -7,31 +7,6 @@ export default async function handler(req, res) {
   const { key, executor, hwid } = req.query; 
   const ip = req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
-  // --- 1. VERIFICAÇÃO GLOBAL (MANUTENÇÃO/AVISO) ---
-  const globalConfig = await redis.hgetall("system:global");
-  
-  // Se o SHUTDOWN estiver ativado, manda comando para fechar
-  if (globalConfig.shutdown === "true") {
-      return res.json({ 
-          ok: false, 
-          action: "shutdown", 
-          message: globalConfig.message || "O Cheat foi desativado remotamente pelo administrador." 
-      });
-  }
-
-  // Se MANUTENÇÃO estiver ativa, bloqueia novos logins
-  if (globalConfig.maintenance === "true") {
-      return res.json({ 
-          ok: false, 
-          action: "maintenance", 
-          message: globalConfig.message || "Estamos em manutenção. Volte mais tarde." 
-      });
-  }
-  
-  // Se houver apenas uma MENSAGEM DE AVISO (sem bloquear), enviamos junto com o sucesso
-  const globalMessage = globalConfig.message || "";
-  // --------------------------------------------------
-
   if (!key) return res.json({ ok: false, error: "No key" });
   
   const data = await redis.hgetall(`key:${key}`);
