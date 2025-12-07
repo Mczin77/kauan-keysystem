@@ -5,34 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Administrativo - Mczin</title>
 
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
 <style>
     /* --- ESTILOS GERAIS --- */
     body {
-        display: none; /* Esconde até validar */
+        /* Esconde até validar o token */
+        display: none; 
         margin: 0;
         padding: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: 'Inter', sans-serif;
         background: #0f0f0f;
         color: #e0e0e0;
-        height: 100vh;
+        min-height: 100vh;
+        --blue-primary: #00aaff;
+        --bg-dark: #141414;
+        --bg-medium: #1c1c1c;
+        --border-color: #333;
+    }
+
+    /* Layout principal com sidebar e conteúdo */
+    .app-layout {
+        display: flex;
+        min-height: 100vh;
     }
 
     /* MENU LATERAL */
     .sidebar {
         width: 250px;
-        background: #141414;
+        background: var(--bg-dark);
         padding: 20px;
-        border-right: 1px solid #333;
+        border-right: 1px solid var(--border-color);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        flex-shrink: 0; /* Não permite que a sidebar encolha */
     }
 
     .sidebar h2 {
         text-align: center;
-        color: #00aaff;
+        color: var(--blue-primary);
         margin-bottom: 30px;
-        font-size: 22px;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 1px;
     }
 
     .sidebar button {
@@ -40,491 +57,805 @@
         padding: 12px;
         margin-top: 10px;
         background: transparent;
-        border: 1px solid #333;
-        border-radius: 6px;
+        border: none;
+        border-radius: 8px;
         color: #ccc;
         cursor: pointer;
-        transition: 0.2s;
-        font-size: 15px;
+        transition: background 0.2s, color 0.2s;
         text-align: left;
-        padding-left: 20px;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        font-weight: 500;
     }
 
-    .sidebar button:hover {
-        background: #1f1f1f;
-        border-color: #00aaff;
-        color: #00aaff;
-    }
-    
-    .sidebar button.active-btn {
-        background: #1f1f1f;
-        border-color: #00aaff;
-        color: #00aaff;
+    .sidebar button.active {
+        background: var(--blue-primary);
+        color: #000;
+        font-weight: 700;
     }
 
-    /* ÁREA PRINCIPAL */
-    .main {
-        flex: 1;
-        padding: 40px;
+    .sidebar button:not(.active):hover {
+        background: var(--bg-medium);
+        color: #fff;
+    }
+
+    .sidebar button svg {
+        margin-right: 10px;
+    }
+
+    /* CONTEÚDO PRINCIPAL */
+    .content-area {
+        flex-grow: 1;
+        padding: 30px;
         overflow-y: auto;
     }
 
-    .card {
-        background: #1a1a1a;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    .section-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--blue-primary);
         margin-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
     }
 
-    .card h3 {
-        margin-top: 0;
-        color: #00aaff;
-        border-bottom: 1px solid #333;
-        padding-bottom: 15px;
+    /* CARTÕES/CARDS */
+    .card {
+        background: var(--bg-medium);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #282828;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
-
-    /* FORMULÁRIOS */
-    .form-row { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; flex-wrap: wrap; }
-    .input-group { display: flex; flex-direction: column; flex: 1; }
-    .input-group label { font-size: 12px; margin-bottom: 5px; color: #888; }
-    input, select, textarea { background: #252525; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; outline: none; width: 100%; box-sizing: border-box; font-family: inherit;}
-    input:focus, select:focus, textarea:focus { border-color: #00aaff; }
-    
-    .btn-primary { background: #00aaff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-    .btn-primary:hover { background: #0088cc; }
 
     /* TABELAS */
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-    th { text-align: left; padding: 12px; background: #252525; color: #aaa; font-weight: normal; }
-    td { padding: 12px; border-bottom: 1px solid #2a2a2a; vertical-align: middle; }
-    tr:hover td { background: #202020; }
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: left;
+    }
+
+    th {
+        color: #aaa;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid var(--border-color);
+    }
     
-    /* STATUS E TAGS */
-    .tag-vip { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-    .tag-time { background: #00aaff; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; }
-    .tag-revoked { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-    .tag-active { background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
-    .tag-session { background: #2ecc71; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; animation: pulse 2s infinite; }
+    td {
+        background: var(--bg-dark);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 15px;
+        vertical-align: middle;
+    }
 
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+    tr:last-child td {
+        border-bottom: none;
+    }
 
-    /* BOTÕES DE AÇÃO */
-    .btn-action { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 3px; color:white; font-weight: bold;}
-    .btn-delete { background: #444; } .btn-delete:hover { background: #cc0000; }
-    .btn-revoke { background: #e74c3c; } .btn-revoke:hover { background: #c0392b; }
-    .btn-unrevoke { background: #2ecc71; } .btn-unrevoke:hover { background: #27ae60; }
-    .btn-reset { background: #f39c12; color: black; } .btn-reset:hover { background: #d35400; color: white; }
-    .btn-notify { background: #9b59b6; color: white; } .btn-notify:hover { background: #8e44ad; }
+    /* Campos de Formulário */
+    input[type="text"], select, textarea {
+        background: var(--bg-dark);
+        border: 1px solid var(--border-color);
+        padding: 10px;
+        border-radius: 6px;
+        color: #fff;
+        transition: border-color 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-    /* SYSTEM CARDS */
-    .sys-card { flex:1; background:#222; padding:20px; border-radius:8px; border:1px solid #333; display:flex; flex-direction:column; justify-content:space-between; }
-    .sys-card h4 { margin-top:0; color:white; font-size:16px; }
-    .sys-card p { color:#888; font-size:13px; height:40px; }
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--blue-primary);
+        outline: none;
+    }
 
-    .discord-box { display: flex; align-items: center; gap: 15px; background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-top: 20px; animation: fadeIn 0.5s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #ccc;
+    }
 
+    /* Botões de Ação na Tabela */
+    .action-button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+    }
+    .action-button:hover {
+        opacity: 0.85;
+    }
+    .action-button:active {
+        transform: scale(0.98);
+    }
+
+    .btn-unlink { background-color: #f44336; color: white; }
+    .btn-notify { background-color: #ff9800; color: #000; }
+    .btn-ban { background-color: #d32f2f; color: white; }
+    .btn-primary { background-color: var(--blue-primary); color: #000; font-weight: 700; }
+
+    /* Estilos responsivos */
+    @media (max-width: 768px) {
+        .app-layout {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            height: auto;
+            border-right: none;
+            border-bottom: 1px solid var(--border-color);
+            flex-direction: row;
+            justify-content: space-around;
+        }
+        .sidebar h2 { display: none; }
+        .sidebar nav {
+            display: flex;
+            width: 100%;
+            justify-content: space-around;
+        }
+        .sidebar button {
+            text-align: center;
+            padding: 8px;
+            margin: 0 5px;
+            flex-grow: 1;
+            font-size: 14px;
+        }
+        .sidebar button svg {
+            margin-right: 0;
+            margin-bottom: 4px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .content-area {
+            padding: 20px 10px;
+        }
+        .section-title {
+            font-size: 24px;
+        }
+    }
+
+    /* Estilo para a mensagem de erro/loading */
+    #loadingMessage {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0f0f0f;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        color: #ff0000;
+        z-index: 1000;
+    }
 </style>
 </head>
 <body>
 
-<script>
-// --- PROTEÇÃO DE ROTA ---
-(async function protectRoute() {
-    const token = localStorage.getItem("panel_token");
-    if (!token) { window.location.href = "/"; return; }
-
-    try {
-        const res = await fetch("/api/check", { headers: { "x-panel-token": token } });
-        const data = await res.json();
-        if (data.ok) {
-            document.body.style.display = "flex";
-            loadKeys(); // Carrega a home por padrão
-        } else {
-            localStorage.removeItem("panel_token");
-            window.location.href = "/";
-        }
-    } catch (e) { window.location.href = "/"; }
-})();
-</script>
-
-<div class="sidebar">
-    <div>
-        <h2>⚡ Painel</h2>
-        <button onclick="loadHome()">🏠 Início</button>
-        <button onclick="loadKeys()">🔑 Gerenciar Keys</button>
-        <button onclick="loadUsers()">👤 Usuários & Discord</button>
-        <button onclick="loadSystem()" style="border-color: #ff9800; color: #ff9800;">📢 Sistema</button>
-    </div>
-    <button onclick="logout()" style="border-color:#ff4d4d; color:#ff4d4d;">🚪 Sair</button>
+<!-- Loading/Erro Message -->
+<div id="loadingMessage" style="display: flex;">
+    Carregando...
 </div>
 
-<div class="main" id="content">
-</div>
-
-<script>
-// --- VARIÁVEIS E FUNÇÕES GERAIS ---
-// ###############################################
-const TOKEN_PADRAO = "SEU_TOKEN_AQUI"; // <--- COLOQUE SEU TOKEN AQUI SE QUISER SALVAR
-// ###############################################
-
-let token = localStorage.getItem("panel_token"); 
-if(!token && TOKEN_PADRAO !== "SEU_TOKEN_AQUI") {
-    token = TOKEN_PADRAO;
-    localStorage.setItem("panel_token", TOKEN_PADRAO);
-}
-
-let foundUser = null; 
-
-function logout() { localStorage.removeItem("panel_token"); window.location.href = "/"; }
-
-function formatTime(timestamp) {
-    if (timestamp === 0 || timestamp === "0") return '∞ Permanente';
-    if (timestamp < Date.now()) return `<span style="color:#ff4d4d; font-weight:bold;">EXPIRADA</span>`;
-    return new Date(Number(timestamp)).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-function formatLastUsed(timestamp) {
-    if (timestamp === 0 || timestamp === "0") return 'Nunca';
-    return new Date(Number(timestamp)).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-}
-
-function loadHome() {
-    document.getElementById("content").innerHTML = `<div class="card"><h3>Bem-vindo ao painel 🎉</h3><p>Selecione uma opção no menu lateral.</p></div>`;
-}
-
-// --- SISTEMA GLOBAL (NOVO) ---
-
-async function loadSystem() {
-    const contentDiv = document.getElementById("content");
-    contentDiv.innerHTML = '<div class="card"><h3>Carregando sistema...</h3></div>';
-
-    try {
-        const res = await fetch("/api/global"); // Chama o novo endpoint
-        const data = await res.json();
-        const config = data.config || {};
-
-        const isMaint = config.maintenance === "true";
-        const isShutdown = config.shutdown === "true";
-        const currentMsg = config.message || "";
-
-        contentDiv.innerHTML = `
-            <div class="card" style="border: 1px solid #ff9800;">
-                <h3 style="color:#ff9800;">📢 Controle Global do Script</h3>
-                
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="color:white; font-weight:bold;">Mensagem Global / Motivo:</label>
-                    <textarea id="globalMessage" rows="3" placeholder="Escreva um aviso para todos os usuários...">${currentMsg}</textarea>
-                </div>
-
-                <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                    
-                    <div class="sys-card">
-                        <div>
-                            <h4>🛠️ Modo Manutenção</h4>
-                            <p>Impede <strong>novos logins</strong>. Quem já está jogando continua até a revalidação.</p>
-                        </div>
-                        <button id="btnMaint" onclick="toggleSystem('maintenance')" class="btn-primary" style="width:100%; background:${isMaint ? '#e74c3c' : '#444'}">
-                            ${isMaint ? 'DESATIVAR Manutenção' : 'ATIVAR Manutenção'}
-                        </button>
-                    </div>
-
-                    <div class="sys-card">
-                        <div>
-                            <h4>💀 Shutdown (Derrubar)</h4>
-                            <p>Fecha o script de <strong>TODOS</strong> os usuários online imediatamente (Kick).</p>
-                        </div>
-                        <button id="btnShut" onclick="toggleSystem('shutdown')" class="btn-primary" style="width:100%; background:${isShutdown ? '#e74c3c' : '#444'}">
-                            ${isShutdown ? 'CANCELAR Shutdown' : 'EXECUTAR Shutdown'}
-                        </button>
-                    </div>
-
-                    <div class="sys-card">
-                        <div>
-                            <h4>📨 Enviar Aviso</h4>
-                            <p>Apenas envia a mensagem acima para todos online sem bloquear nada.</p>
-                        </div>
-                        <button onclick="toggleSystem('message')" class="btn-primary" style="width:100%; background:#f39c12; color:black;">
-                            Atualizar / Enviar
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-        `;
-    } catch (e) {
-        contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro ao carregar sistema.</h3><p>${e.message}</p></div>`;
-    }
-}
-
-async function toggleSystem(action) {
-    const msg = document.getElementById("globalMessage").value;
+<!-- Principal Application Layout -->
+<div class="app-layout">
     
-    // Pega estado atual visualmente
-    const btnMaint = document.getElementById("btnMaint");
-    const btnShut = document.getElementById("btnShut");
-    
-    let maintenance = btnMaint.innerText.includes("DESATIVAR");
-    let shutdown = btnShut.innerText.includes("CANCELAR");
-
-    if (action === 'maintenance') maintenance = !maintenance;
-    if (action === 'shutdown') shutdown = !shutdown;
-    
-    if (action === 'shutdown' && shutdown && !confirm("ATENÇÃO: Isso vai fechar o script de TODOS os usuários online. Tem certeza?")) return;
-
-    try {
-        const res = await fetch("/api/global", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-panel-token": token },
-            body: JSON.stringify({ maintenance, shutdown, message: msg })
-        });
-        const data = await res.json();
-        if (data.ok) {
-            alert("Configuração Global Atualizada!");
-            loadSystem(); 
-        } else {
-            alert("Erro: " + data.error);
-        }
-    } catch (e) { alert("Erro de rede."); }
-}
-
-
-// --- AÇÕES DO DISCORD NOTIFY ---
-
-async function notifyUser(key, ownerName) {
-    const choice = prompt(
-        `Enviar mensagem para ${ownerName}?\n\n` +
-        `Digite 'tempo' para enviar o tempo restante.\n` +
-        `OU digite qualquer outra frase para enviar como mensagem.`
-    );
-
-    if (!choice) return;
-
-    let messageType = "custom";
-    let customMessage = choice;
-
-    if (choice.toLowerCase() === "tempo") {
-        messageType = "time";
-        customMessage = ""; 
-    }
-
-    try {
-        const response = await fetch("/api/notify", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-panel-token': token },
-            body: JSON.stringify({ key, messageType, customMessage })
-        });
-        const data = await response.json();
-
-        if (data.ok) { alert(`✅ Mensagem enviada!`); } 
-        else { alert(`❌ Erro: ${data.error}`); }
-    } catch (e) { alert('Erro de conexão.'); }
-}
-
-// --- GERENCIAMENTO DE KEYS ---
-
-async function resetHWID(key) {
-    if (!confirm(`Resetar HWID da key ${key}?`)) return;
-    try {
-        const res = await fetch("/api/reset_hwid", {
-            method: 'POST', headers: {'Content-Type': 'application/json', 'x-panel-token': token}, body: JSON.stringify({ key })
-        });
-        if ((await res.json()).ok) { alert("HWID Resetado!"); loadKeys(); } else { alert("Erro ao resetar."); }
-    } catch (e) { alert('Erro rede.'); }
-}
-
-async function revokeKey(key, state) {
-    const action = state ? 'BLOQUEAR' : 'DESBLOQUEAR';
-    if (!confirm(`Deseja ${action} a key ${key}?`)) return;
-    try {
-        const res = await fetch("/api/revoke", {
-            method: 'POST', headers: {'Content-Type': 'application/json', 'x-panel-token': token}, body: JSON.stringify({ key, state })
-        });
-        if ((await res.json()).ok) loadKeys(); else alert("Erro.");
-    } catch (e) { alert('Erro rede.'); }
-}
-
-async function deleteKey(key) {
-    if (!confirm(`Apagar key ${key}?`)) return;
-    try {
-        const res = await fetch("/api/delete", {
-            method: "POST", headers: {'Content-Type': 'application/json', 'x-panel-token': token}, body: JSON.stringify({ key })
-        });
-        if ((await res.json()).ok) loadKeys(); else alert("Erro.");
-    } catch (e) { alert("Erro conexão"); }
-}
-
-async function createKey() {
-    const type = document.getElementById("typeInput").value;
-    const days = parseInt(document.getElementById("daysInput").value) || 0;
-    const hours = parseInt(document.getElementById("hoursInput").value) || 0;
-    document.getElementById("generateResult").innerHTML = "Gerando...";
-    try {
-        const res = await fetch("/api/generate", {
-            method: "POST", headers: {'Content-Type': 'application/json', 'x-panel-token': token},
-            body: JSON.stringify({ type, days, hours, minutes: 0 }) 
-        });
-        const data = await res.json();
-        if (data.ok) {
-            document.getElementById("generateResult").innerHTML = `✅ Key: <strong style="color:#2ecc71;">${data.data.key}</strong>`;
-            loadKeys(); 
-        } else { document.getElementById("generateResult").innerHTML = `❌ Erro: ${data.error}`; }
-    } catch (e) { document.getElementById("generateResult").innerHTML = `❌ Erro de conexão.`; }
-}
-
-async function loadKeys() {
-    const contentDiv = document.getElementById("content");
-    if (!document.getElementById("keysTable")) {
-        contentDiv.innerHTML = `
-        <div class="card">
-            <h3>Gerar Nova Key ⚡</h3>
-            <div class="form-row">
-                <div class="input-group" style="flex:none; width: 150px;">
-                    <label>Tipo</label>
-                    <select id="typeInput"><option value="temp">Temporário</option><option value="vip">VIP (Permanente)</option></select>
-                </div>
-                <div class="input-group" style="flex:none; width: 80px;"><label>Dias</label><input type="number" id="daysInput" value="1" min="0"></div>
-                <div class="input-group" style="flex:none; width: 80px;"><label>Horas</label><input type="number" id="hoursInput" value="0" min="0"></div>
-                <div class="input-group" style="flex:none;"><label>&nbsp;</label><button class="btn-primary" onclick="createKey()">+ Gerar Key</button></div>
-            </div>
-            <p id="generateResult" style="margin-top:10px; font-size:14px;"></p>
+    <!-- Sidebar Menu -->
+    <aside class="sidebar">
+        <div>
+            <h2>Mczin Panel</h2>
+            <nav>
+                <button id="nav-users" class="active" onclick="showSection('users')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Usuários
+                </button>
+                <button id="nav-assign" onclick="showSection('assign')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M17 11l4-4-4-4"/></svg>
+                    Vincular Key
+                </button>
+                <button id="nav-notify" onclick="showSection('notify')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Notificar
+                </button>
+            </nav>
         </div>
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:15px;">
-                <h3 style="border:none; margin:0;">Lista de Keys</h3>
-                <button class="btn-primary" onclick="loadKeys()" style="padding: 8px 15px; font-size:13px;">🔄 Atualizar</button>
-            </div>
-            <table id="keysTable">
-                <thead><tr><th>Key</th><th>Tipo</th><th>Validade</th><th>Usos</th><th>HWID</th><th>Último Uso</th><th>Sessão</th><th>Status</th><th>Ações</th></tr></thead>
-                <tbody id="keysTableBody"><tr><td colspan="9" style="text-align:center">Carregando...</td></tr></tbody>
-            </table>
-        </div>`;
-    }
-    const tableBody = document.getElementById("keysTableBody");
-    try {
-        const res = await fetch("/api/list", { method: "GET", headers: { "x-panel-token": token } });
-        const data = await res.json();
-        if (!data.ok) throw new Error("Erro");
-        data.keys.sort((a, b) => (Number(b.lastUsedAt || 0) - Number(a.lastUsedAt || 0)));
+        <div style="text-align: center; color: #555; font-size: 12px;">
+            <p>Mczin Admin Panel</p>
+        </div>
+    </aside>
 
-        let html = "";
-        data.keys.forEach(k => {
-            const isExpired = k.expiresAt && k.expiresAt != 0 && Date.now() > Number(k.expiresAt);
-            const isRevoked = String(k.revoked).toLowerCase() === "true";
-            const sessionActive = Date.now() < Number(k.sessionExpiresAt || 0);
-            
-            let actionButtons = `
-                <button class="btn-action btn-reset" title="Resetar HWID" onclick="resetHWID('${k.key}')">🔄</button>
-                ${isRevoked ? `<button class="btn-action btn-unrevoke" onclick="revokeKey('${k.key}', false)">✅</button>` : `<button class="btn-action btn-revoke" onclick="revokeKey('${k.key}', true)">🚫</button>`}
-                <button class="btn-action btn-delete" onclick="deleteKey('${k.key}')">🗑</button>
-            `;
-
-            const rowStyle = isRevoked ? 'style="background-color: #3d1a1a;"' : (isExpired ? 'style="background-color: #2e2e2e; opacity:0.7;"' : '');
-            
-            html += `<tr ${rowStyle}>
-                <td style="font-family: monospace; color: #00aaff; font-weight:bold;">${k.key}</td>
-                <td>${k.type === "vip" ? '<span class="tag-vip">VIP</span>' : '<span class="tag-time">TEMP</span>'}</td>
-                <td>${isExpired ? '<span style="color:#ff4d4d">Expirada</span>' : formatTime(k.expiresAt)}</td>
-                <td>${k.uses || 0}</td>
-                <td><span title="${k.hwid}">${k.hwid && k.hwid !== "-" ? k.hwid.substring(0, 8)+'...' : 'N/A'}</span></td>
-                <td>${formatLastUsed(k.lastUsedAt || 0)}</td>
-                <td>${sessionActive ? '<span class="tag-session">ONLINE</span>' : '<span style="color:#888; font-size:12px;">Offline</span>'}</td>
-                <td>${isRevoked ? '<span class="tag-revoked">BLOQ</span>' : '<span class="tag-active">OK</span>'}</td>
-                <td>${actionButtons}</td>
-            </tr>`;
-        });
-        tableBody.innerHTML = data.keys.length ? html : '<tr><td colspan="9" style="text-align:center; padding:20px;">Nenhuma key encontrada.</td></tr>';
-    } catch (e) { tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:red;">${e.message}</td></tr>`; }
-}
-
-// --- LÓGICA USUÁRIOS ---
-
-async function loadUsers() {
-    const contentDiv = document.getElementById("content");
-    contentDiv.innerHTML = '<div class="card"><h3>Carregando...</h3></div>';
-    try {
-        const resKeys = await fetch("/api/list", { headers: { "x-panel-token": token } });
-        const dataKeys = await resKeys.json();
-        const allKeys = dataKeys.keys || [];
-        let optionsHtml = `<option value="">Selecione uma Key...</option>`;
-        allKeys.forEach(k => {
-            optionsHtml += `<option value="${k.key}">${k.key} - ${k.type.toUpperCase()} ${k.ownerName ? `(Dono: ${k.ownerName})` : "(Livre)"}</option>`;
-        });
-
-        contentDiv.innerHTML = `
-            <div class="card">
-                <h3>Vincular Discord a uma Key 🎮</h3>
-                <div class="form-row" style="align-items: flex-end;">
-                    <div class="input-group" style="flex:1"><label>ID do Discord</label><input type="text" id="discordIdInput" placeholder="Ex: 298561..."></div>
-                    <div class="input-group" style="flex:none;"><label>&nbsp;</label><button class="btn-primary" onclick="searchDiscordUser()">🔍 Buscar</button></div>
-                </div>
-                <div id="discordResult" class="discord-box" style="display:none;">
-                    <img id="userAvatar" src="" style="width:60px; height:60px; border-radius:50%; border:2px solid #00aaff;">
-                    <div><h4 id="userName" style="margin:0; color:white;">User</h4><span id="userIdDisplay" style="font-size:12px; color:#888;">ID: 000</span></div>
-                </div>
-                <div id="assignArea" style="display:none; margin-top:20px;">
-                    <div class="input-group"><label>Escolha a Key:</label><select id="keySelect" style="width:100%; padding:12px;">${optionsHtml}</select></div>
-                    <button class="btn-primary" style="width:100%; margin-top:15px; background:#00d26a;" onclick="saveUserToKey()">✅ Vincular</button>
-                </div>
-            </div>
-            <div class="card">
-                <h3>Usuários Vinculados</h3>
+    <!-- Content Area -->
+    <main class="content-area">
+        
+        <!-- Section 1: Linked Users (Default) -->
+        <section id="section-users" class="page-section">
+            <h1 class="section-title">Usuários Vinculados</h1>
+            <div class="card overflow-x-auto">
                 <table>
-                    <thead><tr><th>Perfil</th><th>Nome (Discord)</th><th>Key Vinculada</th><th>Ações</th></tr></thead>
-                    <tbody id="usersTableBody"></tbody>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">Avatar</th>
+                            <th>Usuário Discord</th>
+                            <th style="width: 120px;">Key</th>
+                            <th style="width: 200px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Content will be injected by JavaScript -->
+                    </tbody>
                 </table>
-            </div>`;
-        renderLinkedUsers(allKeys);
-    } catch (e) { contentDiv.innerHTML = `<div class="card"><h3 style="color:red">Erro</h3><p>${e.message}</p></div>`; }
+            </div>
+        </section>
+
+        <!-- Section 2: Assign Key -->
+        <section id="section-assign" class="page-section" style="display: none;">
+            <h1 class="section-title">Vincular Key a Usuário</h1>
+            <div class="card grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Left: Search User -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-4 text-white">1. Buscar Usuário (Discord ID)</h3>
+                    <div class="form-group mb-4 flex gap-2">
+                        <input type="text" id="discordIdInput" placeholder="Ex: 123456789012345678" class="flex-grow">
+                        <button class="btn-primary flex-shrink-0" onclick="searchUser()">Buscar</button>
+                    </div>
+
+                    <div id="userResult" class="mt-4 p-4 rounded-lg border border-red-500 bg-red-900/20" style="display: none;">
+                        <!-- User info will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Right: Assign Key -->
+                <div id="assignPanel" class="opacity-50 pointer-events-none transition-opacity">
+                    <h3 class="text-xl font-semibold mb-4 text-white">2. Selecionar Key e Vincular</h3>
+                    <div class="form-group mb-4">
+                        <label for="keySelect">Key Disponível</label>
+                        <select id="keySelect">
+                            <!-- Keys will be loaded here -->
+                        </select>
+                    </div>
+                    <button class="btn-primary w-full" onclick="assignKey()">VINCULAR AGORA</button>
+                    <p class="text-xs text-gray-500 mt-2">A key será vinculada permanentemente a este ID Discord.</p>
+                </div>
+
+            </div>
+        </section>
+        
+        <!-- Section 3: Notify User -->
+        <section id="section-notify" class="page-section" style="display: none;">
+            <h1 class="section-title">Enviar Notificação Discord</h1>
+            <div class="card">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="form-group">
+                        <label for="notifyKeySelect">Key do Usuário</label>
+                        <select id="notifyKeySelect" onchange="updateNotifyUserDisplay()">
+                             <!-- Keys will be loaded here -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="messageTypeSelect">Tipo de Mensagem</label>
+                        <select id="messageTypeSelect" onchange="toggleCustomMessage()">
+                            <option value="time">Key Expirando (Padrão)</option>
+                            <option value="ban">Key Banida (Padrão)</option>
+                            <option value="custom">Mensagem Customizada</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Usuário Selecionado</label>
+                        <div id="notifyUserDisplay" class="p-2 bg-gray-700/50 rounded-md text-sm text-center">
+                            Selecione uma Key
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-6" id="customMessageGroup" style="display: none;">
+                    <label for="customMessageTextarea">Mensagem Customizada (Markdown)</label>
+                    <textarea id="customMessageTextarea" rows="5" placeholder="Digite sua mensagem. Use **Markdown** para formatar!"></textarea>
+                </div>
+
+                <button class="btn-notify w-full" onclick="sendNotification()">ENVIAR NOTIFICAÇÃO</button>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- Modal for Unlink/Ban Confirmation (Hidden by default) -->
+<div id="actionModal" class="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50" style="display: none;">
+    <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md">
+        <h3 id="modalTitle" class="text-2xl font-bold mb-4 text-white"></h3>
+        <p id="modalMessage" class="mb-6 text-gray-300"></p>
+        <div class="flex justify-end space-x-4">
+            <button class="action-button bg-gray-600 text-white" onclick="closeModal()">Cancelar</button>
+            <button id="modalActionButton" class="action-button"></button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+// ################################################
+// 1. CONFIGURAÇÃO E AUTENTICAÇÃO
+// ################################################
+
+// O token de acesso que permite interagir com sua API no Vercel.
+// VOCÊ DEVE PREENCHER ESTA VARIÁVEL COM SEU TOKEN SECRETO!
+const token = "SEU_TOKEN_SECRETO_AQUI"; 
+// Mude o valor acima. Ex: const token = "abc-123-xyz";
+
+let allKeys = [];
+let foundUser = null; // Usuário encontrado na busca do Discord
+
+const loadingMessage = document.getElementById("loadingMessage");
+const appLayout = document.querySelector(".app-layout");
+const body = document.body;
+
+/**
+ * Verifica se o token está definido e permite o acesso.
+ * Em um ambiente real, esta função faria uma chamada de API para validar o token.
+ */
+function checkAuth() {
+    if (token === "SEU_TOKEN_SECRETO_AQUI" || !token) {
+        loadingMessage.innerHTML = "ERRO: Token não configurado. Edite a variável 'token'.";
+        loadingMessage.style.color = "#ff0000";
+        return false;
+    }
+    
+    // Se o token for considerado válido (neste ambiente de demonstração)
+    loadingMessage.style.display = 'none';
+    body.style.display = 'block';
+    loadUsers(); // Inicia o carregamento dos dados
+    return true;
 }
 
-async function searchDiscordUser() {
-    const id = document.getElementById("discordIdInput").value.trim();
-    if (!id) return alert("Digite um ID!");
-    try {
-        const res = await fetch(`/api/discord?id=${id}`);
-        const data = await res.json();
-        if (!data.ok) { alert("Usuário não encontrado!"); } else {
-            foundUser = data;
-            document.getElementById("discordResult").style.display = "flex";
-            document.getElementById("assignArea").style.display = "block";
-            document.getElementById("userAvatar").src = data.avatar;
-            document.getElementById("userName").innerText = data.global_name || data.username;
-            document.getElementById("userIdDisplay").innerText = "ID: " + data.id;
-        }
-    } catch (e) { alert("Erro API"); }
+// Inicia a verificação de autenticação ao carregar
+window.onload = checkAuth;
+
+
+// ################################################
+// 2. NAVEGAÇÃO
+// ################################################
+
+function showSection(sectionId) {
+    // Esconde todas as seções
+    document.querySelectorAll('.page-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    // Remove a classe 'active' de todos os botões de navegação
+    document.querySelectorAll('.sidebar button').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    // Mostra a seção desejada e ativa o botão correspondente
+    document.getElementById(`section-${sectionId}`).style.display = 'block';
+    document.getElementById(`nav-${sectionId}`).classList.add('active');
+
+    // Se estiver indo para Vincular Key, carrega as keys disponíveis
+    if (sectionId === 'assign') {
+        loadAvailableKeys();
+    }
+    // Se estiver indo para Notificar, carrega as keys para notificação
+    if (sectionId === 'notify') {
+        loadNotifyKeys();
+    }
 }
 
-async function saveUserToKey() {
-    const key = document.getElementById("keySelect").value;
-    if (!key || !foundUser) return alert("Selecione key e usuário.");
-    if(!confirm(`Vincular?`)) return;
+
+// ################################################
+// 3. SEÇÃO USUÁRIOS VINCULADOS (CRUD BÁSICO)
+// ################################################
+
+/**
+ * Carrega todas as keys da API e as exibe na tabela.
+ */
+async function loadUsers() {
     try {
-        const res = await fetch("/api/assign", {
-            method: "POST", headers: { "Content-Type": "application/json", "x-panel-token": token },
-            body: JSON.stringify({ key: key, discordId: foundUser.id, discordName: foundUser.username, discordAvatar: foundUser.avatar })
+        const res = await fetch("/api/list", {
+            headers: { "x-panel-token": token }
         });
-        if ((await res.json()).ok) { alert("Sucesso!"); loadUsers(); } else { alert("Erro."); }
-    } catch (e) { alert("Erro salvar"); }
+        const data = await res.json();
+        
+        if (data.ok) {
+            allKeys = data.keys.sort((a, b) => {
+                // Coloca keys vinculadas no topo
+                if (a.ownerId && !b.ownerId) return -1;
+                if (!a.ownerId && b.ownerId) return 1;
+                // Ordena por Key
+                return a.key.localeCompare(b.key);
+            });
+            renderLinkedUsers(allKeys);
+        } else {
+            document.getElementById("usersTableBody").innerHTML = `<tr><td colspan='4' class="text-center py-5 text-red-400">Erro ao carregar dados: ${data.error}</td></tr>`;
+        }
+    } catch (e) {
+        document.getElementById("usersTableBody").innerHTML = `<tr><td colspan='4' class="text-center py-5 text-red-400">Erro de conexão com o servidor.</td></tr>`;
+        console.error("Erro ao carregar usuários:", e);
+    }
 }
 
+/**
+ * Renderiza a tabela de usuários a partir da lista de keys.
+ */
 function renderLinkedUsers(keys) {
     const tbody = document.getElementById("usersTableBody");
     const linkedKeys = keys.filter(k => k.ownerId);
-    if (linkedKeys.length === 0) { tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; padding:20px;'>Vazio</td></tr>"; return; }
+    
+    if (linkedKeys.length === 0) { 
+        tbody.innerHTML = `<tr><td colspan='4' style='text-align:center; padding:20px; color:#aaa;'>Nenhuma Key vinculada ainda.</td></tr>`; 
+        return; 
+    }
+    
     let html = "";
     linkedKeys.forEach(k => {
-        html += `<tr>
-                <td><img src="${k.ownerAvatar}" style="width:40px; height:40px; border-radius:50%; border:1px solid #555;"></td>
+        const expiryDate = k.expiresAt ? new Date(parseInt(k.expiresAt)).toLocaleString('pt-BR') : 'N/A';
+        const isExpired = k.expiresAt && Date.now() > parseInt(k.expiresAt);
+        const status = k.isBanned === 'true' ? 
+            '<span class="px-2 py-1 text-xs font-bold text-red-500 bg-red-900/50 rounded-full">BANIDA</span>' : 
+            isExpired ? 
+            `<span class="px-2 py-1 text-xs font-bold text-yellow-500 bg-yellow-900/50 rounded-full">EXPIRADA (${expiryDate})</span>` : 
+            `<span class="px-2 py-1 text-xs font-bold text-green-500 bg-green-900/50 rounded-full">ATIVO (${expiryDate})</span>`;
+
+        html += `
+            <tr>
+                <td><img src="${k.ownerAvatar}" onerror="this.onerror=null;this.src='https://placehold.co/40x40/333/ccc?text=?'" style="width:40px; height:40px; border-radius:50%; border:1px solid #555;"></td>
                 <td style="font-weight:bold; color:#fff;">${k.ownerName}</td>
-                <td style="font-family:monospace; color:#00aaff;">${k.key}</td>
+                <td style="font-family:monospace; color:${k.isBanned === 'true' ? '#f44336' : '#00aaff'};">${k.key}</td>
                 <td>
-                    <button class="btn-action btn-notify" onclick="notifyUser('${k.key}', '${k.ownerName}')">📩 DM</button>
+                    <div class="flex justify-center space-x-2">
+                        <button class="action-button btn-notify text-sm" onclick="showActionModal('notify', '${k.key}')">Notificar</button>
+                        <button class="action-button btn-unlink text-sm" onclick="showActionModal('unlink', '${k.key}')">Desvincular</button>
+                        <button class="action-button ${k.isBanned === 'true' ? 'bg-green-600' : 'btn-ban'} text-sm" onclick="showActionModal('${k.isBanned === 'true' ? 'unban' : 'ban'}', '${k.key}')">${k.isBanned === 'true' ? 'Desbanir' : 'Banir'}</button>
+                    </div>
                 </td>
-            </tr>`;
+            </tr>
+            <tr><td colspan="4" class="py-1 pt-0 text-xs text-gray-500">${status}</td></tr>
+        `;
     });
     tbody.innerHTML = html;
 }
+
+// ################################################
+// 4. MODAL DE AÇÃO (DESVINCULAR/BANIR)
+// ################################################
+
+let currentActionKey = null;
+let currentActionType = null;
+
+function showActionModal(type, key) {
+    currentActionKey = key;
+    currentActionType = type;
+    const keyData = allKeys.find(k => k.key === key);
+    const modal = document.getElementById('actionModal');
+    const title = document.getElementById('modalTitle');
+    const message = document.getElementById('modalMessage');
+    const actionButton = document.getElementById('modalActionButton');
+
+    title.textContent = '';
+    message.textContent = '';
+    actionButton.textContent = '';
+    actionButton.className = 'action-button';
+    actionButton.onclick = () => performAction();
+
+    switch (type) {
+        case 'unlink':
+            title.textContent = 'Confirmação de Desvinculação';
+            message.innerHTML = `Tem certeza que deseja desvincular a Key **${key}** do usuário **${keyData.ownerName}**? O usuário não poderá usar o script até vincular uma nova key.`;
+            actionButton.textContent = 'DESVINCULAR';
+            actionButton.classList.add('btn-unlink');
+            break;
+        case 'ban':
+            title.textContent = 'Confirmação de Banimento';
+            message.innerHTML = `Tem certeza que deseja **BANIR** a Key **${key}**? O script deixará de funcionar imediatamente para **${keyData.ownerName}**.`;
+            actionButton.textContent = 'BANIR';
+            actionButton.classList.add('btn-ban');
+            break;
+        case 'unban':
+            title.textContent = 'Confirmação de Desbanimento';
+            message.innerHTML = `Tem certeza que deseja **DESBANIR** a Key **${key}**? O script voltará a funcionar para **${keyData.ownerName}**.`;
+            actionButton.textContent = 'DESBANIR';
+            actionButton.classList.add('bg-green-600', 'text-white');
+            break;
+        case 'notify':
+             // Neste caso, vamos direto para a seção de notificação, pois requer mais inputs
+             closeModal();
+             showSection('notify');
+             document.getElementById('notifyKeySelect').value = key;
+             updateNotifyUserDisplay();
+             return;
+    }
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('actionModal').style.display = 'none';
+}
+
+async function performAction() {
+    const key = currentActionKey;
+    const type = currentActionType;
+    let endpoint = '';
+    let method = 'POST';
+    let bodyData = null;
+
+    if (type === 'unlink') {
+        endpoint = '/api/unlink';
+        bodyData = { key };
+    } else if (type === 'ban' || type === 'unban') {
+        endpoint = '/api/ban';
+        bodyData = { key, isBanned: type === 'ban' };
+    } else {
+        closeModal();
+        return;
+    }
+
+    try {
+        const res = await fetch(endpoint, {
+            method: method,
+            headers: { "Content-Type": "application/json", "x-panel-token": token },
+            body: JSON.stringify(bodyData)
+        });
+        const result = await res.json();
+        
+        if (result.ok) {
+            alert(`Ação (${type}) realizada com sucesso!`);
+            closeModal();
+            loadUsers(); // Recarrega os dados
+        } else {
+            alert(`Erro ao realizar ação: ${result.error || 'Erro desconhecido'}`);
+        }
+    } catch (e) {
+        alert("Erro de conexão com a API.");
+        console.error("Erro na ação:", e);
+    }
+}
+
+// ################################################
+// 5. SEÇÃO VINCULAR KEY
+// ################################################
+
+/**
+ * Carrega as keys NÃO vinculadas para o <select> de vinculação.
+ */
+function loadAvailableKeys() {
+    const select = document.getElementById("keySelect");
+    select.innerHTML = '<option value="">Carregando...</option>';
+
+    const availableKeys = allKeys.filter(k => !k.ownerId);
+
+    if (availableKeys.length === 0) {
+        select.innerHTML = '<option value="">Nenhuma Key disponível</option>';
+        document.getElementById('assignPanel').classList.add('opacity-50', 'pointer-events-none');
+        return;
+    }
+    
+    let html = '<option value="">Selecione uma Key</option>';
+    availableKeys.forEach(k => {
+        html += `<option value="${k.key}">${k.key}</option>`;
+    });
+    select.innerHTML = html;
+
+    // Só permite vincular se houver um usuário encontrado
+    if (foundUser) {
+        document.getElementById('assignPanel').classList.remove('opacity-50', 'pointer-events-none');
+    }
+}
+
+/**
+ * Busca o usuário Discord pelo ID.
+ */
+async function searchUser() {
+    const discordId = document.getElementById("discordIdInput").value.trim();
+    const resultDiv = document.getElementById("userResult");
+    const assignPanel = document.getElementById("assignPanel");
+    resultDiv.style.display = 'block';
+    resultDiv.className = 'mt-4 p-4 rounded-lg border border-yellow-500 bg-yellow-900/20';
+    resultDiv.innerHTML = '<p class="text-white font-bold">Buscando usuário...</p>';
+    foundUser = null;
+    assignPanel.classList.add('opacity-50', 'pointer-events-none');
+    document.getElementById("keySelect").value = "";
+
+    if (!discordId) {
+        resultDiv.className = 'mt-4 p-4 rounded-lg border border-red-500 bg-red-900/20';
+        resultDiv.innerHTML = '<p class="text-white font-bold">Por favor, insira um ID Discord.</p>';
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/discord?id=${discordId}`, {
+            headers: { "x-panel-token": token }
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+            foundUser = data;
+            resultDiv.className = 'mt-4 p-4 rounded-lg border border-green-500 bg-green-900/20';
+            resultDiv.innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <img src="${data.avatar}" onerror="this.onerror=null;this.src='https://placehold.co/60x60/333/ccc?text=?'" class="w-12 h-12 rounded-full border-2 border-green-500">
+                    <div>
+                        <p class="font-bold text-lg text-white">${data.global_name || data.username}</p>
+                        <p class="text-sm text-gray-400">@${data.username} (ID: ${data.id})</p>
+                    </div>
+                </div>
+            `;
+            // Ativa o painel de vinculação
+            assignPanel.classList.remove('opacity-50', 'pointer-events-none');
+            loadAvailableKeys(); // Recarrega keys
+        } else {
+            resultDiv.className = 'mt-4 p-4 rounded-lg border border-red-500 bg-red-900/20';
+            resultDiv.innerHTML = `<p class="text-white font-bold">Erro: Usuário não encontrado. Verifique o ID.</p>`;
+        }
+    } catch (e) {
+        resultDiv.className = 'mt-4 p-4 rounded-lg border border-red-500 bg-red-900/20';
+        resultDiv.innerHTML = `<p class="text-white font-bold">Erro de conexão com o servidor.</p>`;
+        console.error("Erro ao buscar usuário:", e);
+    }
+}
+
+/**
+ * Envia a requisição para vincular a key ao usuário encontrado.
+ */
+async function assignKey() {
+    const key = document.getElementById("keySelect").value;
+    
+    if (!key || !foundUser) {
+        alert("Selecione uma Key e busque um Usuário Discord primeiro.");
+        return;
+    }
+
+    if (!confirm(`Tem certeza que deseja vincular a Key "${key}" ao usuário "${foundUser.global_name || foundUser.username}"?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/assign", {
+            method: "POST", 
+            headers: { 
+                "Content-Type": "application/json", 
+                "x-panel-token": token 
+            },
+            body: JSON.stringify({ 
+                key: key, 
+                discordId: foundUser.id, 
+                discordName: foundUser.global_name || foundUser.username, 
+                discordAvatar: foundUser.avatar 
+            })
+        });
+        const result = await res.json();
+
+        if (result.ok) { 
+            alert("Vínculo realizado com sucesso!"); 
+            // Limpa e recarrega
+            document.getElementById("discordIdInput").value = "";
+            document.getElementById("userResult").style.display = 'none';
+            document.getElementById('assignPanel').classList.add('opacity-50', 'pointer-events-none');
+            foundUser = null;
+            loadUsers(); 
+        } else { 
+            alert(`Erro ao vincular: ${result.error || 'Erro desconhecido'}`); 
+        }
+    } catch (e) { 
+        alert("Erro de conexão ao tentar vincular."); 
+        console.error("Erro ao salvar:", e);
+    }
+}
+
+// ################################################
+// 6. SEÇÃO NOTIFICAR
+// ################################################
+
+/**
+ * Carrega todas as keys que estão vinculadas a um dono para o select de notificação.
+ */
+function loadNotifyKeys() {
+    const select = document.getElementById("notifyKeySelect");
+    select.innerHTML = '<option value="">Carregando...</option>';
+
+    const notifyKeys = allKeys.filter(k => k.ownerId);
+
+    if (notifyKeys.length === 0) {
+        select.innerHTML = '<option value="">Nenhuma Key vinculada</option>';
+        document.getElementById('notifyUserDisplay').textContent = "Vazio";
+        return;
+    }
+    
+    let html = '<option value="">Selecione a Key do usuário</option>';
+    notifyKeys.forEach(k => {
+        html += `<option value="${k.key}">${k.key} (${k.ownerName})</option>`;
+    });
+    select.innerHTML = html;
+    updateNotifyUserDisplay();
+}
+
+/**
+ * Atualiza o nome do usuário Discord selecionado no painel de Notificação.
+ */
+function updateNotifyUserDisplay() {
+    const key = document.getElementById("notifyKeySelect").value;
+    const display = document.getElementById('notifyUserDisplay');
+    const keyData = allKeys.find(k => k.key === key);
+
+    if (keyData && keyData.ownerName) {
+        display.innerHTML = `<p class="font-bold text-white">${keyData.ownerName}</p><p class="text-xs text-gray-400">ID: ${keyData.ownerId}</p>`;
+        display.className = 'p-2 bg-gray-700 rounded-md text-sm text-center';
+    } else {
+        display.textContent = "Selecione uma Key";
+        display.className = 'p-2 bg-gray-700/50 rounded-md text-sm text-center';
+    }
+}
+
+/**
+ * Mostra/esconde o campo de mensagem customizada.
+ */
+function toggleCustomMessage() {
+    const type = document.getElementById("messageTypeSelect").value;
+    const customGroup = document.getElementById("customMessageGroup");
+    
+    customGroup.style.display = type === "custom" ? "block" : "none";
+}
+
+/**
+ * Envia a notificação via API.
+ */
+async function sendNotification() {
+    const key = document.getElementById("notifyKeySelect").value;
+    const messageType = document.getElementById("messageTypeSelect").value;
+    const customMessage = document.getElementById("customMessageTextarea").value.trim();
+
+    if (!key) {
+        alert("Por favor, selecione a Key do usuário que deseja notificar.");
+        return;
+    }
+    
+    if (messageType === 'custom' && !customMessage) {
+        alert("O campo de mensagem customizada não pode estar vazio.");
+        return;
+    }
+    
+    if (!confirm(`Confirma o envio da notificação (Tipo: ${messageType}) para a Key ${key}?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/notify", {
+            method: "POST", 
+            headers: { 
+                "Content-Type": "application/json", 
+                "x-panel-token": token 
+            },
+            body: JSON.stringify({ 
+                key: key, 
+                messageType: messageType, 
+                customMessage: customMessage
+            })
+        });
+        const result = await res.json();
+
+        if (result.ok) { 
+            alert(`Notificação enviada com sucesso!`); 
+            document.getElementById("customMessageTextarea").value = "";
+        } else { 
+            alert(`Erro ao enviar notificação: ${result.error || 'Erro desconhecido'}`); 
+        }
+    } catch (e) { 
+        alert("Erro de conexão ao tentar notificar."); 
+        console.error("Erro ao notificar:", e);
+    }
+}
+
 </script>
+
 </body>
 </html>
